@@ -1,5 +1,5 @@
 use osm_graph::overpass_api::{osm_request, OverpassResponse};
-use osm_graph::graph::{get_osm_nodes, get_osm_ways, filter_unconnected_nodes, OSMNode, OSMWay};
+use osm_graph::graph::{get_osm_nodes, OSMNode};
 
 use serde_json::Value;
 
@@ -10,7 +10,7 @@ use plotters::prelude::*;
 use std::time::Instant;
 
 //Given a set of OSMNodes, plot them
-fn plot(nodes: Vec<OSMNode>, _ways: Vec<OSMWay>) -> Result<(), Box<dyn std::error::Error>> {
+fn plot(nodes: Vec<OSMNode>) -> Result<(), Box<dyn std::error::Error>> {
 
     let node_data: Vec<(f64, f64)> = nodes
         .iter()
@@ -85,17 +85,5 @@ fn main() {
 
     println!("{} nodes parsed in {} milliseconds", osm_nodes.len(), node_time);
 
-    let create_way_time = Instant::now();
-    let osm_ways: Vec<OSMWay> = get_osm_ways(elements).unwrap();
-    let way_time = create_way_time.elapsed().as_millis();
-
-    println!("{} ways parsed in {} milliseconds", osm_ways.len(), way_time);
-
-    let filter_nodes_time = Instant::now();
-    let osm_nodes: Vec<OSMNode> = filter_unconnected_nodes(&osm_ways, osm_nodes);
-    let filter_time = filter_nodes_time.elapsed().as_millis();
-
-    println!("Filtered down to {} nodes in {} milliseconds", osm_nodes.len(), filter_time);
-
-    let _ = plot(osm_nodes, osm_ways);
+    let _ = plot(osm_nodes);
 }
