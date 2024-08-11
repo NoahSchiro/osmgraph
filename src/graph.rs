@@ -21,7 +21,28 @@ impl fmt::Display for OSMNode {
 pub struct OSMWay {
     pub id: u64,
     pub nodes: Vec<u64>,
+    pub dists: Vec<f64>,
     pub highway_type: String
+}
+
+//Haversine dist in meters given lat/lons in radians
+fn haversine_dist(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
+    let dlat = lat2 - lat1;
+    let dlon = lon2 - lon1;
+
+    let a = (dlat / 2.).sin().powi(2) + lat1.cos() * lat2.cos() * (dlon / 2.).sin().powi(2);
+    let c = 2. * a.sqrt().atan2((1. - a).sqrt());
+    let earth_radius = 6371. * 1000.;
+
+    earth_radius * c
+}
+
+//Get the distance between two nodes
+fn node_dist(n1: &OSMNode, n2: &OSMNode) -> f64 {
+    haversine_dist(
+        n1.lat.to_radians(), n1.lon.to_radians(),
+        n2.lat.to_radians(), n2.lon.to_radians()
+    )
 }
 
 pub fn get_osm_nodes(elements: &Vec<Value>) -> Result<Vec<OSMNode>, &'static str> {
@@ -119,7 +140,14 @@ pub fn get_osm_ways(elements: &Vec<Value>) -> Result<Vec<OSMWay>, &'static str> 
             ).collect();
 
         //Add to list
-        result.push(OSMWay { id, nodes, highway_type });
+        result.push(OSMWay {
+            id,
+            nodes,
+            // We can only compute distance if we have access to the nodes as well
+            // Leave this blank at the moment
+            dists: vec![], 
+            highway_type
+        });
 
     }
 
@@ -170,7 +198,7 @@ pub fn create_graph(elements: &Vec<Value>) -> Result<UnGraph<OSMNode, OSMWay>, &
     }
 
     //Iterate through every way
-    for way in ways {
+    for mut way in ways {
 
         //Iterate through all of the connections in way
         for i in 0..way.nodes.len()-1 {
@@ -187,6 +215,19 @@ pub fn create_graph(elements: &Vec<Value>) -> Result<UnGraph<OSMNode, OSMWay>, &
                 .get(&node_id_2)
                 .ok_or("Node mapping contained no node!")
                 .unwrap();
+
+            let n1: &OSMNode = result.node_weight(node_index_1.into())
+                .ok_or("Could not find node index!")?;
+            let n2: &OSMNode = result.node_weight(node_index_2.into())
+                .ok_or("Could not find node index!")?;
+
+            //Add the distance between the nodes
+            way.dists.push(
+                node_dist(n1, n2)
+            );
+
+            //TODO: Instead, create an edge type that doesn't copy the whole way object. Copying
+            //the way object is expensive!
 
             result.add_edge(
                 node_index_1.into(),
