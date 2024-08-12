@@ -4,20 +4,16 @@ use serde_json::Value;
 use petgraph::{graph::UnGraph, adj::NodeIndex};
 
 use super::{
-    way::{OSMWay, get_osm_ways, filter_unconnected_nodes},
-    node::{OSMNode, get_osm_nodes, node_dist},
+    way::{OSMWay, get_osm_ways},
+    node::{OSMNode, node_dist, get_nodes_from_ways},
     edge::OSMEdge
 };
 
 pub fn create_graph(elements: &Vec<Value>) -> Result<UnGraph<OSMNode, OSMEdge>, &'static str> {
 
     //Parse out all of the nodes and ways
-    let nodes: Vec<OSMNode> = get_osm_nodes(elements)?;
     let ways: Vec<OSMWay> = get_osm_ways(elements)?;
-
-    //Filter nodes down to the ones that are on ways.
-    //TODO: In the future, we may want to use more than just that
-    let nodes: Vec<OSMNode> = filter_unconnected_nodes(&ways, nodes);
+    let nodes: Vec<OSMNode> = get_nodes_from_ways(elements, &ways)?;
 
     //TODO: In the future, this should support one way streets (directed graph).
     let mut result = UnGraph::<OSMNode, OSMEdge>::with_capacity(nodes.len(), ways.len());

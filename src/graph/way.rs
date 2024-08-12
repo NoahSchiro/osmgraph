@@ -1,8 +1,4 @@
-use std::collections::HashSet;
-
 use serde_json::Value;
-
-use crate::graph::node::OSMNode;
 
 #[derive(Clone)]
 pub struct OSMWay {
@@ -75,20 +71,3 @@ pub fn get_osm_ways(elements: &Vec<Value>) -> Result<Vec<OSMWay>, &'static str> 
     Ok(result)
 }
 
-//Given a set of ways, only collect nodes that lie on a way
-pub fn filter_unconnected_nodes(ways: &Vec<OSMWay>, nodes: Vec<OSMNode>) -> Vec<OSMNode> {
-
-    //Create set of node ids
-    let mut node_ids: HashSet<u64> = HashSet::new();
-    for way in ways {
-        for id in way.nodes.clone() {
-            node_ids.insert(id);
-        }
-    }
-
-    //Filter anything not in the hashset
-    nodes
-        .into_iter()
-        .filter(|node| node_ids.contains(&node.id))
-        .collect()
-}
