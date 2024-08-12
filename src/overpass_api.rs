@@ -1,3 +1,5 @@
+use std::fs::{File, read_to_string};
+use std::io::prelude::*;
 
 use serde::{Serialize, Deserialize};
 use serde_json::Value;
@@ -12,6 +14,36 @@ pub struct OverpassResponse {
     pub generator: Value,
     pub osm3s: Value,
     pub version: Value
+}
+
+impl OverpassResponse {
+
+    //Save from a valid json
+    pub fn save(&self, filepath: &str) -> Result<(), &'static str> {
+
+        let list_as_json = serde_json::to_string(self).unwrap();
+
+        let mut file = File::create(filepath)
+            .expect("Could not create file!");
+
+        file.write_all(list_as_json.as_bytes())
+            .expect("Cannot write to the file!");
+
+        Ok(())
+    }
+
+    //Load from a valid json
+    pub fn load(filepath: &str) -> Result<Self, &'static str> {
+
+        let file_contents = read_to_string(filepath)
+            .expect("Was not able to read from filepath");
+
+        let json: OverpassResponse = serde_json::from_str(&file_contents)
+            .expect("JSON was invalid");
+
+        Ok(json)
+    }
+
 }
 
 //A function to request data from the Overpass API given a particular query
