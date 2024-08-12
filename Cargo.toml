@@ -14,6 +14,10 @@ repository = "https://github.com/NoahSchiro/osm-graph"
 keywords = ["map", "api", "graph", "data-structure"]
 categories = ["api-bindings"]
 
+exclude = [
+	"/assets/*"
+]
+
 [dev-dependencies]
 plotters = "0.3.6" # This will eventually be used for an example of plotting a graph
 

@@ -30,7 +30,7 @@ fn main() {
     println!("Parsed json in {} milliseconds", json_time);
 
     let save_json_time = Instant::now();
-    match json.save("./selinsgrove.json") {
+    match json.save("./assets/selinsgrove.json") {
         Ok(..) => println!("Saved in {} milliseconds", save_json_time.elapsed().as_millis()),
         Err(err) => println!("{}", err)
     }
