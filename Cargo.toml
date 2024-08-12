@@ -1,7 +1,18 @@
 [package]
 name = "osm-graph"
+authors = ["NoahSchiro"]
 version = "0.1.0"
 edition = "2021"
+
+readme = "README.md"
+license = "MIT"
+
+description = "Convert OSM queries into graphs."
+documentation = "todo!"
+repository = "https://github.com/NoahSchiro/osm-graph"
+
+keywords = ["map", "api", "graph", "data-structure"]
+categories = ["api-bindings"]
 
 [dev-dependencies]
 plotters = "0.3.6" # This will eventually be used for an example of plotting a graph
