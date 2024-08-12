@@ -36,7 +36,6 @@ fn main() {
 
     println!("{} elements in request", elements.len());
 
-
     let create_graph_time = Instant::now();
     let g = create_graph(elements).unwrap();
     let graph_time = create_graph_time.elapsed().as_millis();

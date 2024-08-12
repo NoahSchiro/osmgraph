@@ -3,12 +3,13 @@ use std::collections::HashMap;
 use serde_json::Value;
 use petgraph::{graph::UnGraph, adj::NodeIndex};
 
-use crate::graph::{
+use super::{
     way::{OSMWay, get_osm_ways, filter_unconnected_nodes},
-    node::{OSMNode, get_osm_nodes, node_dist}
+    node::{OSMNode, get_osm_nodes, node_dist},
+    edge::OSMEdge
 };
 
-pub fn create_graph(elements: &Vec<Value>) -> Result<UnGraph<OSMNode, OSMWay>, &'static str> {
+pub fn create_graph(elements: &Vec<Value>) -> Result<UnGraph<OSMNode, OSMEdge>, &'static str> {
 
     //Parse out all of the nodes and ways
     let nodes: Vec<OSMNode> = get_osm_nodes(elements)?;
@@ -19,14 +20,14 @@ pub fn create_graph(elements: &Vec<Value>) -> Result<UnGraph<OSMNode, OSMWay>, &
     let nodes: Vec<OSMNode> = filter_unconnected_nodes(&ways, nodes);
 
     //TODO: In the future, this should support one way streets (directed graph).
-    let mut result = UnGraph::<OSMNode, OSMWay>::with_capacity(nodes.len(), ways.len());
+    let mut result = UnGraph::<OSMNode, OSMEdge>::with_capacity(nodes.len(), ways.len());
 
     //Petgraph has its own notion of an index so we want to map from the
     //OSM index to the petgraph one so we can add ways later on
     let mut node_mapping: HashMap<u64, NodeIndex> = HashMap::new();
 
+    //Add nodes to mapping and to graph
     for node in nodes {
-
         node_mapping.insert(
             node.id,
             result.add_node(node.clone()).index().try_into().unwrap()
@@ -34,14 +35,16 @@ pub fn create_graph(elements: &Vec<Value>) -> Result<UnGraph<OSMNode, OSMWay>, &
     }
 
     //Iterate through every way
-    for mut way in ways {
+    for way in ways {
 
         //Iterate through all of the connections in way
         for i in 0..way.nodes.len()-1 {
 
+            //Get OSM node ID
             let node_id_1: u64 = way.nodes[i];
             let node_id_2: u64 = way.nodes[i+1];
 
+            //Find petgraph node ID
             let node_index_1: NodeIndex = *node_mapping
                 .get(&node_id_1)
                 .ok_or("Node mapping contained no node!")
@@ -52,26 +55,27 @@ pub fn create_graph(elements: &Vec<Value>) -> Result<UnGraph<OSMNode, OSMWay>, &
                 .ok_or("Node mapping contained no node!")
                 .unwrap();
 
+            //Get nodes out of petgraph
             let n1: &OSMNode = result.node_weight(node_index_1.into())
                 .ok_or("Could not find node index!")?;
             let n2: &OSMNode = result.node_weight(node_index_2.into())
                 .ok_or("Could not find node index!")?;
 
-            //Add the distance between the nodes
-            way.dists.push(
-                node_dist(n1, n2)
-            );
-
-            //TODO: Instead, create an edge type that doesn't copy the whole way object. Copying
-            //the way object is expensive!
-
+            //Insert edge into graph
             result.add_edge(
-                node_index_1.into(),
-                node_index_2.into(),
-                way.clone()
+                node_index_1.into(), // Start node
+                node_index_2.into(), // End node
+                
+                //Weight information
+                OSMEdge {
+                    nodes: [n1.id, n2.id],
+                    dist: node_dist(n1,n2),
+                    highway_type: way.highway_type.clone()
+                }
             );
         }
     }
 
+    //Return
     Ok(result)
 }
