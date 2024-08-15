@@ -25,7 +25,7 @@ pub fn create_graph(elements: &Vec<Value>) -> Result<UnGraph<OSMNode, OSMEdge>, 
     //Add nodes to mapping and to graph
     for node in nodes {
         node_mapping.insert(
-            node.id,
+            node.id(),
             result.add_node(node.clone()).index().try_into().unwrap()
         );
     }
@@ -33,12 +33,14 @@ pub fn create_graph(elements: &Vec<Value>) -> Result<UnGraph<OSMNode, OSMEdge>, 
     //Iterate through every way
     for way in ways {
 
+        let nodes = way.nodes();
+
         //Iterate through all of the connections in way
-        for i in 0..way.nodes.len()-1 {
+        for i in 0..nodes.len()-1 {
 
             //Get OSM node ID
-            let node_id_1: u64 = way.nodes[i];
-            let node_id_2: u64 = way.nodes[i+1];
+            let node_id_1: u64 = nodes[i];
+            let node_id_2: u64 = nodes[i+1];
 
             //Find petgraph node ID
             let node_index_1: NodeIndex = *node_mapping
@@ -63,11 +65,7 @@ pub fn create_graph(elements: &Vec<Value>) -> Result<UnGraph<OSMNode, OSMEdge>, 
                 node_index_2.into(), // End node
                 
                 //Weight information
-                OSMEdge {
-                    nodes: [n1.id, n2.id],
-                    dist: node_dist(n1,n2),
-                    highway_type: way.highway_type.clone()
-                }
+                OSMEdge::new([n1.id(), n2.id()], node_dist(n1,n2), way.highway_type().to_string())
             );
         }
     }

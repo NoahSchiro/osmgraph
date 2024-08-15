@@ -7,9 +7,27 @@ use crate::graph::way::OSMWay;
 
 #[derive(Clone)]
 pub struct OSMNode {
-    pub id: u64,
-    pub lat: f64,
-    pub lon: f64
+    id: u64,
+    lat: f64,
+    lon: f64
+}
+
+//Just getters and setters for now
+impl OSMNode {
+
+    pub fn new(id: u64, lat: f64, lon: f64) -> Self {
+        OSMNode { id, lat, lon }
+    }
+
+    pub fn id(&self) -> u64 {
+        self.id
+    }
+    pub fn lat(&self) -> f64 {
+        self.lat
+    }
+    pub fn lon(&self) -> f64 {
+        self.lon
+    }
 }
 
 impl fmt::Display for OSMNode {
@@ -90,7 +108,7 @@ pub fn filter_unconnected_nodes(ways: &Vec<OSMWay>, nodes: Vec<OSMNode>) -> Vec<
     //Create set of node ids
     let mut node_ids: HashSet<u64> = HashSet::new();
     for way in ways {
-        for id in way.nodes.clone() {
+        for id in way.nodes().clone() {
             node_ids.insert(id);
         }
     }
@@ -108,7 +126,7 @@ pub fn get_nodes_from_ways(elements: &Vec<Value>, ways: &Vec<OSMWay>)
     //Create set of node ids
     let mut node_ids: HashSet<u64> = HashSet::new();
     for way in ways {
-        for id in way.nodes.clone() {
+        for id in way.nodes().clone() {
             node_ids.insert(id);
         }
     }

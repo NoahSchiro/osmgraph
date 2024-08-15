@@ -11,15 +11,28 @@ use tokio::{
 pub struct OverpassResponse {
 
     //Elements is where there is important graph information
-    pub elements: Value,
+    elements: Value,
 
     //Metadata
-    pub generator: Value,
-    pub osm3s: Value,
-    pub version: Value
+    generator: Value,
+    osm3s: Value,
+    version: Value
 }
 
 impl OverpassResponse {
+
+    pub fn elements(&self) -> &Value {
+        &self.elements
+    }
+    pub fn generator(&self) -> &Value {
+        &self.generator
+    }
+    pub fn osm3s(&self) -> &Value {
+        &self.osm3s
+    }
+    pub fn version(&self) -> &Value {
+        &self.version
+    }
 
     //Save to a valid json
     pub async fn save(&self, filepath: &str) -> Result<(), &'static str> {

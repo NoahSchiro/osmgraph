@@ -13,7 +13,7 @@ fn main() {
         .expect("Was not able to load json!");
     println!("Parsed the json in {} milliseconds", parse_json_time.elapsed().as_millis());
 
-    let elements: &Vec<Value> = json.elements.as_array().unwrap();
+    let elements: &Vec<Value> = json.elements().as_array().unwrap();
     println!("{} elements in request", elements.len());
 
     let create_way_time = Instant::now();

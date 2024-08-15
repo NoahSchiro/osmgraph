@@ -2,10 +2,31 @@ use serde_json::Value;
 
 #[derive(Clone)]
 pub struct OSMWay {
-    pub id: u64,
-    pub nodes: Vec<u64>,
-    pub dists: Vec<f64>,
-    pub highway_type: String
+    id: u64,
+    nodes: Vec<u64>,
+    dists: Vec<f64>,
+    highway_type: String
+}
+
+//Getters and setters
+impl OSMWay {
+
+    pub fn new(id: u64, nodes: Vec<u64>, dists: Vec<f64>, highway_type: String) -> Self {
+        OSMWay { id, nodes, dists, highway_type }
+    }
+
+    pub fn id(&self) -> u64 {
+        self.id
+    }
+    pub fn nodes(&self) -> &Vec<u64> {
+        &self.nodes
+    }
+    pub fn dists(&self) -> &Vec<f64> {
+        &self.dists
+    }
+    pub fn highway_type(&self) -> &str {
+        &self.highway_type
+    }
 }
 
 pub fn get_osm_ways(elements: &Vec<Value>) -> Result<Vec<OSMWay>, &'static str> {
