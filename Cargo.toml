@@ -24,5 +24,6 @@ plotters = "0.3.6" # This will eventually be used for an example of plotting a g
 [dependencies]
 petgraph = "0.6.5"
 reqwest = { version = "0.12.5", features = ["json", "blocking"] }
+tokio = { version = "1.39.2", features = ["rt-multi-thread", "fs"] }
 serde = { version = "1.0.204", features = ["derive"] }
 serde_json = "1.0.121"

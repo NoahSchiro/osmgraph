@@ -1,4 +1,4 @@
-use osm_graph::overpass_api::{osm_request, OverpassResponse};
+use osm_graph::overpass_api::{osm_request_blocking, OverpassResponse};
 
 use serde_json::Value;
 
@@ -20,7 +20,7 @@ fn main() {
     "#);
 
     let start = Instant::now();
-    let response: String = osm_request(query).unwrap();
+    let response: String = osm_request_blocking(query).unwrap();
     let request_time = start.elapsed().as_secs();
 
     println!("Request took {} seconds", request_time);

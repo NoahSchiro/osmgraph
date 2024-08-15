@@ -9,7 +9,7 @@ use std::time::Instant;
 fn main() {
 
     let parse_json_time = Instant::now();
-    let json: OverpassResponse = OverpassResponse::load("./assets/selinsgrove.json")
+    let json: OverpassResponse = OverpassResponse::load_blocking("./assets/selinsgrove.json")
         .expect("Was not able to load json!");
     println!("Parsed the json in {} milliseconds", parse_json_time.elapsed().as_millis());
 

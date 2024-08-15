@@ -1,7 +1,6 @@
 use std::time::Instant;
 
-use osm_graph::overpass_api::{OverpassResponse, osm_request};
-
+use osm_graph::overpass_api::{OverpassResponse, osm_request_blocking};
 
 fn main() {
 
@@ -18,7 +17,7 @@ fn main() {
     "#);
 
     let start = Instant::now();
-    let response: String = osm_request(query).unwrap();
+    let response: String = osm_request_blocking(query).unwrap();
     let request_time = start.elapsed().as_secs();
 
     println!("Request took {} seconds", request_time);
@@ -30,13 +29,13 @@ fn main() {
     println!("Parsed json in {} milliseconds", json_time);
 
     let save_json_time = Instant::now();
-    match json.save("./assets/selinsgrove.json") {
+    match json.save_blocking("./assets/selinsgrove.json") {
         Ok(..) => println!("Saved in {} milliseconds", save_json_time.elapsed().as_millis()),
         Err(err) => println!("{}", err)
     }
 
     let load_json_time = Instant::now();
-    let _: OverpassResponse = OverpassResponse::load("./assets/selinsgrove.json")
+    let _: OverpassResponse = OverpassResponse::load_blocking("./assets/selinsgrove.json")
         .expect("Was unable to load json!");
     println!("Loaded json in {} milliseconds", load_json_time.elapsed().as_millis());
 }
