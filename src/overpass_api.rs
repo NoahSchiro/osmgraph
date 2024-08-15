@@ -7,7 +7,7 @@ use tokio::{
     runtime::Runtime
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Hash, Debug, Default)]
 pub struct OverpassResponse {
 
     //Elements is where there is important graph information

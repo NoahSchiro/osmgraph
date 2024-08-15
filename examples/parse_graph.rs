@@ -24,4 +24,7 @@ fn main() {
         g.edge_count(),
         create_graph_time.elapsed().as_millis()
     );
+
+    println!("Example node:\n {}", g.raw_nodes()[0].weight);
+    println!("Example edge:\n {}", g.raw_edges()[0].weight);
 }

@@ -1,11 +1,37 @@
+use std::fmt;
+
 use serde_json::Value;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, PartialOrd, Debug, Default)]
 pub struct OSMWay {
     id: u64,
     nodes: Vec<u64>,
     dists: Vec<f64>,
     highway_type: String
+}
+
+impl fmt::Display for OSMWay {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "OSMWay(\n")?;
+        write!(f, "  id: {}\n", self.id)?;
+        write!(f, "  type: {}\n", self.highway_type)?;
+
+        write!(f, "  nodes: [\n")?;
+        for node in &self.nodes {
+            write!(f, "    {}\n", node)?;
+        }
+        write!(f, "  ]\n")?;
+        
+        write!(f, "  dists: [\n")?;
+        for dist in &self.dists {
+            write!(f, "    {}\n", dist)?;
+        }
+        write!(f, "  ]\n")?;
+
+        write!(f, ")")?;
+
+        Ok(())
+    }
 }
 
 //Getters and setters

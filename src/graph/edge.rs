@@ -1,3 +1,6 @@
+use std::fmt;
+
+#[derive(Clone, PartialEq, PartialOrd, Debug, Default)]
 pub struct OSMEdge {
 
     //Node IDs
@@ -8,6 +11,18 @@ pub struct OSMEdge {
 
     //Highway type as defined by OSM
     highway_type: String
+}
+
+impl fmt::Display for OSMEdge {
+
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "OSMEdge(n1: {}, n2: {}, dist: {}, road type: {})",
+            self.nodes[0],
+            self.nodes[1],
+            self.dist,
+            self.highway_type
+        )
+    }
 }
 
 impl OSMEdge {

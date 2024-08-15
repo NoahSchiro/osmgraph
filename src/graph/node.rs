@@ -5,11 +5,17 @@ use serde_json::Value;
 
 use crate::graph::way::OSMWay;
 
-#[derive(Clone)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Default)]
 pub struct OSMNode {
     id: u64,
     lat: f64,
     lon: f64
+}
+
+impl fmt::Display for OSMNode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "OSMNode(id: {}, lat: {}, lon: {})", self.id, self.lat, self.lon)
+    }
 }
 
 //Just getters and setters for now
@@ -27,12 +33,6 @@ impl OSMNode {
     }
     pub fn lon(&self) -> f64 {
         self.lon
-    }
-}
-
-impl fmt::Display for OSMNode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "OSMNode(id: {}, lat: {}, lon: {})", self.id, self.lat, self.lon)
     }
 }
 
