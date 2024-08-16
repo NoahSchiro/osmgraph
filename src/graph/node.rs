@@ -42,8 +42,8 @@ fn haversine_dist(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
     let dlon = lon2 - lon1;
 
     let a = (dlat / 2.).sin().powi(2) + lat1.cos() * lat2.cos() * (dlon / 2.).sin().powi(2);
-    let c = 2. * a.sqrt().atan2((1. - a).sqrt());
-    let earth_radius = 6371. * 1000.;
+    let c = 2. * a.sqrt().asin();
+    let earth_radius = 6371009.;
 
     earth_radius * c
 }
@@ -185,4 +185,88 @@ pub fn get_nodes_from_ways(elements: &Vec<Value>, ways: &Vec<OSMWay>)
 
     //Return
     Ok(result)
+}
+
+
+//This test is needed in this file since the havesine function is private to this module
+#[cfg(test)]
+mod haversine_tests {
+    use super::*;
+    
+    // Floating point tolerance
+    const EPSILON: f64 = 0.1;
+
+    fn approx_equal(a: f64, b: f64, epsilon: f64) -> bool {
+        (a - b).abs() < epsilon
+    }
+
+    #[test]
+    fn test_zero_distance() {
+        let (lat, lon): (f64, f64) = (52.5200, 13.4050);
+
+        let dist = haversine_dist(
+            lat.to_radians(),
+            lon.to_radians(),
+            lat.to_radians(),
+            lon.to_radians()
+        );
+        assert!(approx_equal(dist, 0.0, EPSILON));
+    }
+
+    #[test]
+    fn test_berlin_paris() {
+        let (lat1, lon1): (f64, f64) = (52.5200, 13.4050);
+        let (lat2, lon2): (f64, f64) = (48.8566, 2.3522);
+
+        let dist = haversine_dist(
+            lat1.to_radians(),
+            lon1.to_radians(),
+            lat2.to_radians(),
+            lon2.to_radians()
+        );
+        assert!(approx_equal(dist, 877464.57, EPSILON));
+    }
+
+    #[test]
+    fn test_new_york_los_angeles() {
+        let (lat1, lon1): (f64, f64) = (40.7128, -74.0060);
+        let (lat2, lon2): (f64, f64) = (34.0522, -118.2437);
+        
+        let dist = haversine_dist(
+            lat1.to_radians(),
+            lon1.to_radians(),
+            lat2.to_radians(),
+            lon2.to_radians()
+        );
+        assert!(approx_equal(dist, 3935751.81, EPSILON));
+    }
+
+    #[test]
+    fn test_poles_distance() {
+        let (lat1, lon1): (f64, f64) = (90.0, 0.0);
+        let (lat2, lon2): (f64, f64) = (-90.0, 0.0);
+        
+        let dist = haversine_dist(
+            lat1.to_radians(),
+            lon1.to_radians(),
+            lat2.to_radians(),
+            lon2.to_radians()
+        );
+        assert!(approx_equal(dist, 20015115.07, EPSILON));
+    }
+
+    #[test]
+    fn test_equator_distance() {
+        let (lat1, lon1): (f64, f64) = (0., 0.);
+        let (lat2, lon2): (f64, f64) = (0., 90.);
+
+        let dist = haversine_dist(
+            lat1.to_radians(),
+            lon1.to_radians(),
+            lat2.to_radians(),
+            lon2.to_radians()
+        );
+        // Should be quarter of the Earth's circumference
+        assert!(approx_equal(dist, 10007557.53, EPSILON));
+    }
 }
