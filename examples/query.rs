@@ -31,7 +31,7 @@ fn main() {
     
     println!("Parsed the json in {} milliseconds", json_time);
 
-    let elements: &Vec<Value> = json.elements.as_array().unwrap();
+    let elements: &Vec<Value> = json.elements().as_array().unwrap();
 
     println!("{} elements in request", elements.len());
 }

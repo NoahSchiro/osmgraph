@@ -29,13 +29,13 @@ fn main() {
     println!("Parsed json in {} milliseconds", json_time);
 
     let save_json_time = Instant::now();
-    match json.save_blocking("./assets/selinsgrove.json") {
+    match json.save_blocking("./assets/test.json") {
         Ok(..) => println!("Saved in {} milliseconds", save_json_time.elapsed().as_millis()),
         Err(err) => println!("{}", err)
     }
 
     let load_json_time = Instant::now();
-    let _: OverpassResponse = OverpassResponse::load_blocking("./assets/selinsgrove.json")
+    let _: OverpassResponse = OverpassResponse::load_blocking("./assets/test.json")
         .expect("Was unable to load json!");
     println!("Loaded json in {} milliseconds", load_json_time.elapsed().as_millis());
 }
