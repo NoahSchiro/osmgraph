@@ -16,15 +16,18 @@ fn main() {
         out skel qt;
     "#);
 
-    let response: String = osm_request_blocking(query).unwrap();
+    let response: String = osm_request_blocking(query)
+        .expect("Was not able to request OSM!");
 
     println!("Request complete!");
 
-    let json: OverpassResponse = serde_json::from_str(&response).unwrap();
+    let json: OverpassResponse = serde_json::from_str(&response)
+        .expect("Was not able to parse json!");
     
     println!("Parsed the json!");
 
-    let elements: &Vec<Value> = json.elements().as_array().unwrap();
+    let elements: &Vec<Value> = json.elements().as_array()
+        .expect("Was not able to fetch elements from json!");
 
     println!("{} elements in request", elements.len());
 }

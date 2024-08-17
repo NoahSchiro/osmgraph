@@ -9,9 +9,11 @@ fn main() {
         .expect("Was not able to load json!");
     println!("Parsed the json!");
 
-    let elements: &Vec<Value> = json.elements().as_array().unwrap();
+    let elements: &Vec<Value> = json.elements().as_array()
+        .expect("Was not able to fetch elements from json!");
     println!("{} elements in request", elements.len());
 
-    let osm_nodes: Vec<OSMNode> = get_osm_nodes(elements).unwrap();
+    let osm_nodes: Vec<OSMNode> = get_osm_nodes(elements)
+        .expect("Was not able to get nodes from json!");
     println!("{} nodes parsed!", osm_nodes.len());
 }

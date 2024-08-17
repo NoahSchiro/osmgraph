@@ -83,10 +83,12 @@ fn main() {
         .expect("Was not able to load json!");
     println!("Parsed the json!");
 
-    let elements: &Vec<Value> = json.elements().as_array().unwrap();
+    let elements: &Vec<Value> = json.elements().as_array()
+        .expect("Was not able to make request!");
     println!("{} elements in request", elements.len());
 
-    let g = create_graph(elements).unwrap();
+    let g: UnGraph<OSMNode, OSMEdge> = create_graph(elements)
+        .expect("Was not able to create graph from json!");
 
     println!("Created graph with {} nodes and {} edges",
         g.node_count(),
