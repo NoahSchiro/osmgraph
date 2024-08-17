@@ -7,10 +7,31 @@ use tokio::{
     runtime::Runtime
 };
 
+/// `OverpassResponse` is the basic structure that we expect the `osm_request` string to return.
+/// Serde JSON helps us parse this string into the correct data structure.
+///
+/// Example:
+/// ```rust
+/// let query = String::from(r#"
+///     [out:json];
+///     area[name="Selinsgrove"]->.searchArea;
+///     (
+///       way(area.searchArea);
+///       node(area.searchArea);
+///     );
+///     out body;
+///     >;
+///     out skel qt;
+/// "#);
+/// let response: String = osm_request_blocking(query)
+///     .expect("Was not able to request OSM!");
+/// let json: OverpassResponse = serde_json::from_str(&response)
+///     .expect("Was not able to parse json!");
+/// ```
 #[derive(Serialize, Deserialize, Clone, PartialEq, Hash, Debug, Default)]
 pub struct OverpassResponse {
 
-    //Elements is where there is important graph information
+    //Graph data
     elements: Value,
 
     //Metadata
@@ -21,20 +42,25 @@ pub struct OverpassResponse {
 
 impl OverpassResponse {
 
+    /// Return the `elements` field from the response. This field is the most important as it
+    /// contains the actual graph information.
     pub fn elements(&self) -> &Value {
         &self.elements
     }
+    /// Return the `generator` field from the response.
     pub fn generator(&self) -> &Value {
         &self.generator
     }
+    /// Return the `osm3s` field from the response.
     pub fn osm3s(&self) -> &Value {
         &self.osm3s
     }
+    /// Return the `version` field from the response.
     pub fn version(&self) -> &Value {
         &self.version
     }
 
-    //Save to a valid json
+    /// Given a specified `filepath`, save the OverpassResponse to that location.
     pub async fn save(&self, filepath: &str) -> Result<(), &'static str> {
 
         let list_as_json = serde_json::to_string(self).unwrap();
@@ -54,14 +80,15 @@ impl OverpassResponse {
         Ok(())
     }
 
-    //Save to a valid json and wait
+    /// Behaves the same as [`OverpassResponse::save`], but will wait for the function to finish before continuing.
     pub fn save_blocking(&self, filepath: &str) -> Result<(), &'static str> {
         Runtime::new()
             .expect("Could not create runtime!")
             .block_on(self.save(filepath))
     }
 
-    //Load from a valid json
+    /// Given a specified `filepath`, load the OverpassResponse from that location. The file is
+    /// assumed to be a JSON and follow the structure of OverpassResponse.
     pub async fn load(filepath: &str) -> Result<Self, &'static str> {
 
         let mut file = File::open(filepath)
@@ -83,7 +110,7 @@ impl OverpassResponse {
         Ok(json)
     }
 
-    //Load from a valid json and wait for response
+    /// Behaves the same as [`OverpassResponse::load`], but will wait for the function to finish before continuing.
     pub fn load_blocking(filepath: &str) -> Result<Self, &'static str> {
         Runtime::new()
             .expect("Could not create runtime!")
@@ -91,7 +118,8 @@ impl OverpassResponse {
     }
 }
 
-//A function to request data from the Overpass API given a particular query
+/// Requests data from the Overpass API given a particular query. The query must conform to the
+/// Overpass Query Language.
 pub async fn osm_request(query: String) -> Result<String, &'static str> {
 
     let url = "https://overpass-api.de/api/interpreter";
@@ -112,6 +140,7 @@ pub async fn osm_request(query: String) -> Result<String, &'static str> {
     Ok(json_string)
 }
 
+/// Behaves the same as [`osm_request`], but will wait for the function to finish before continuing.
 pub fn osm_request_blocking(query: String) -> Result<String, &'static str> {
     Runtime::new()
         .expect("Could not create runtime!")
