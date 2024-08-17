@@ -1,41 +1,15 @@
-use std::time::Instant;
-
-use osm_graph::overpass_api::{OverpassResponse, osm_request_blocking};
+use osm_graph::overpass_api::OverpassResponse;
 
 fn main() {
 
-    let query = String::from(r#"
-        [out:json];
-        area[name="Selinsgrove"]->.searchArea;
-        (
-          way(area.searchArea);
-          node(area.searchArea);
-        );
-        out body;
-        >;
-        out skel qt;
-    "#);
+    let location = "./assets/test.json";
 
-    let start = Instant::now();
-    let response: String = osm_request_blocking(query).unwrap();
-    let request_time = start.elapsed().as_secs();
+    let loaded_json: OverpassResponse = OverpassResponse::load_blocking(location)
+        .expect("Was unable to load json!");
+    println!("Loaded json!");
 
-    println!("Request took {} seconds", request_time);
-
-    let parse_json_time = Instant::now();
-    let json: OverpassResponse = serde_json::from_str(&response).unwrap();
-    let json_time = parse_json_time.elapsed().as_millis();
-
-    println!("Parsed json in {} milliseconds", json_time);
-
-    let save_json_time = Instant::now();
-    match json.save_blocking("./assets/test.json") {
-        Ok(..) => println!("Saved in {} milliseconds", save_json_time.elapsed().as_millis()),
+    match loaded_json.save_blocking("./assets/test.json") {
+        Ok(..) => println!("Saved json to {}!", location),
         Err(err) => println!("{}", err)
     }
-
-    let load_json_time = Instant::now();
-    let _: OverpassResponse = OverpassResponse::load_blocking("./assets/test.json")
-        .expect("Was unable to load json!");
-    println!("Loaded json in {} milliseconds", load_json_time.elapsed().as_millis());
 }
