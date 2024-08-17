@@ -9,8 +9,10 @@ use super::{
     edge::OSMEdge
 };
 
+/// `OSMGraph` is just a type redefinition of `UnGraph<OSMNode, OSMEdge>`
 pub type OSMGraph = UnGraph<OSMNode, OSMEdge>;
 
+/// Given a json type structure, this function tries to parse an `OSMGraph` out of that json.
 pub fn create_graph(elements: &Vec<Value>) -> Result<OSMGraph, &'static str> {
 
     //Parse out all of the nodes and ways
@@ -18,7 +20,6 @@ pub fn create_graph(elements: &Vec<Value>) -> Result<OSMGraph, &'static str> {
     let nodes: Vec<OSMNode> = get_nodes_from_ways(elements, &ways)
         .expect("Was not able to retrieve nodes from ways!");
 
-    //TODO: In the future, this should support one way streets (directed graph).
     let mut result = UnGraph::<OSMNode, OSMEdge>::with_capacity(nodes.len(), ways.len());
 
     //Petgraph has its own notion of an index so we want to map from the

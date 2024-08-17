@@ -5,6 +5,8 @@ use serde_json::Value;
 
 use crate::graph::way::OSMWay;
 
+/// OSMNode contains all information that we might care about in a node. Currently, it contains a
+/// node ID (as defined in Overpass API) a latitude and a longitude.
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Default)]
 pub struct OSMNode {
     id: u64,
@@ -21,22 +23,27 @@ impl fmt::Display for OSMNode {
 //Just getters and setters for now
 impl OSMNode {
 
+    /// Create a new OSMNode from fields.
     pub fn new(id: u64, lat: f64, lon: f64) -> Self {
         OSMNode { id, lat, lon }
     }
 
+    /// Get the node ID.
     pub fn id(&self) -> u64 {
         self.id
     }
+    /// Get the node latitude.
     pub fn lat(&self) -> f64 {
         self.lat
     }
+    /// Get the node longitude. 
     pub fn lon(&self) -> f64 {
         self.lon
     }
 }
 
-//Haversine dist in meters given lat/lons in radians
+/// Compute the [haversine distance](https://en.wikipedia.org/wiki/Haversine_formula)
+/// (in meters) between two sets of coordinates, assuming those coordinates are in radians.
 fn haversine_dist(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
     let dlat = lat2 - lat1;
     let dlon = lon2 - lon1;
@@ -48,7 +55,7 @@ fn haversine_dist(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
     earth_radius * c
 }
 
-//Get the distance between two nodes
+/// Get the distance between two nodes using the haversine distance.
 pub(super) fn node_dist(n1: &OSMNode, n2: &OSMNode) -> f64 {
     haversine_dist(
         n1.lat.to_radians(), n1.lon.to_radians(),
@@ -56,6 +63,7 @@ pub(super) fn node_dist(n1: &OSMNode, n2: &OSMNode) -> f64 {
     )
 }
 
+/// Given a json type structure, this function tries to parse all `OSMNodes` out of that json.
 pub fn get_osm_nodes(elements: &Vec<Value>) -> Result<Vec<OSMNode>, &'static str> {
 
     //Only get OSM elements that are nodes
@@ -104,11 +112,11 @@ pub fn get_osm_nodes(elements: &Vec<Value>) -> Result<Vec<OSMNode>, &'static str
         );
     }
 
-    //Return
     Ok(result)
 }
 
-//Given a set of ways, only collect nodes that lie on a way
+/// Given a set of nodes and ways, this function tries to parse all `OSMNodes` that lie
+/// on one of the ways provided.
 pub fn filter_unconnected_nodes(ways: &Vec<OSMWay>, nodes: Vec<OSMNode>) -> Vec<OSMNode> {
 
     //Create set of node ids
@@ -126,6 +134,8 @@ pub fn filter_unconnected_nodes(ways: &Vec<OSMWay>, nodes: Vec<OSMNode>) -> Vec<
         .collect()
 }
 
+/// Given a json type structure and a `Vec<OSMWay>`, this function tries to
+/// parse all `OSMNodes` out of that json if and only if the node lies on one of the ways provided.
 pub fn get_nodes_from_ways(elements: &Vec<Value>, ways: &Vec<OSMWay>)
     -> Result<Vec<OSMNode>, &'static str> { 
 
