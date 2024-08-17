@@ -1,5 +1,5 @@
 use osm_graph::overpass_api::OverpassResponse;
-use osm_graph::graph::{OSMNode, OSMEdge, create_graph};
+use osm_graph::graph::{OSMGraph, OSMNode, OSMEdge, create_graph};
 
 use serde_json::Value;
 use petgraph::stable_graph::DefaultIx;
@@ -8,7 +8,7 @@ use petgraph::graph::{UnGraph, Edge};
 //For plotting:
 use plotters::prelude::*;
 
-fn display(image_location: &str, graph: UnGraph<OSMNode, OSMEdge>) -> Result<(), Box<dyn std::error::Error>> {
+fn display(image_location: &str, graph: OSMGraph) -> Result<(), Box<dyn std::error::Error>> {
 
     let nodes: Vec<OSMNode> = graph
         .raw_nodes()
@@ -87,7 +87,7 @@ fn main() {
         .expect("Was not able to make request!");
     println!("{} elements in request", elements.len());
 
-    let g: UnGraph<OSMNode, OSMEdge> = create_graph(elements)
+    let g: OSMGraph = create_graph(elements)
         .expect("Was not able to create graph from json!");
 
     println!("Created graph with {} nodes and {} edges",

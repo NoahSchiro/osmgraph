@@ -9,7 +9,9 @@ use super::{
     edge::OSMEdge
 };
 
-pub fn create_graph(elements: &Vec<Value>) -> Result<UnGraph<OSMNode, OSMEdge>, &'static str> {
+pub type OSMGraph = UnGraph<OSMNode, OSMEdge>;
+
+pub fn create_graph(elements: &Vec<Value>) -> Result<OSMGraph, &'static str> {
 
     //Parse out all of the nodes and ways
     let ways: Vec<OSMWay> = get_osm_ways(elements)?;

@@ -1,17 +1,17 @@
 use std::collections::HashSet;
 
 use osm_graph::overpass_api::OverpassResponse;
-use osm_graph::graph::{OSMNode, OSMEdge, create_graph};
+use osm_graph::graph::{OSMGraph, OSMNode, OSMEdge, create_graph};
 
 use serde_json::Value;
-use petgraph::graph::{UnGraph, Edge, NodeIndex};
+use petgraph::graph::{Edge, NodeIndex};
 use petgraph::algo::astar;
 
 //For plotting:
 use plotters::prelude::*;
 use rand::seq::IteratorRandom;
 
-fn display(image_location: &str, graph: UnGraph<OSMNode, OSMEdge>, path: Vec<NodeIndex>) -> Result<(), Box<dyn std::error::Error>> {
+fn display(image_location: &str, graph: OSMGraph, path: Vec<NodeIndex>) -> Result<(), Box<dyn std::error::Error>> {
 
     //Get nodes
     let nodes: Vec<OSMNode> = graph
