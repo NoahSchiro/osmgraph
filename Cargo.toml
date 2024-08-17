@@ -20,7 +20,8 @@ exclude = [
 
 [dev-dependencies]
 tokio = { version = "1.39.2", features = ["macros"] }
-plotters = "0.3.6" # This will eventually be used for an example of plotting a graph
+plotters = "0.3.6" # This is used in parse_graph and astar examples
+rand = "0.8.5" # This is used in astar example
 
 [dependencies]
 petgraph = "0.6.5"
