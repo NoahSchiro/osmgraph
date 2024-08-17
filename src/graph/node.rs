@@ -74,19 +74,25 @@ pub fn get_osm_nodes(elements: &Vec<Value>) -> Result<Vec<OSMNode>, &'static str
     for elem in node_elements {
 
         let id: u64 = if let Some(x) = elem.get("id").cloned() {
-            x.as_u64().expect("Could not parse to u64!")
+            x.as_u64().unwrap_or_else(||
+                panic!("Could not parse id {} as u64", x)
+            )
         } else {
             continue; //Node is invalid if it has no ID
         };
 
         let lat: f64 = if let Some(x) = elem.get("lat").cloned() {
-            x.as_f64().expect("Could not parse to f64!")
+            x.as_f64().unwrap_or_else(||
+                panic!("Could not parse latitude {} as f64", x)
+            )
         } else {
             continue; //Node is invalid if it has no lat 
         };
 
         let lon: f64 = if let Some(x) = elem.get("lon").cloned() {
-            x.as_f64().expect("Could not parse to f64!")
+            x.as_f64().unwrap_or_else(||
+                panic!("Could not parse longitude {} as f64", x)
+            )
         } else {
             continue; //Node is invalid if it has no lon
         };
@@ -146,7 +152,9 @@ pub fn get_nodes_from_ways(elements: &Vec<Value>, ways: &Vec<OSMWay>)
         .filter(|e| {
             match e.get("id") {
                 Some(id) => node_ids.contains(
-                    &id.as_u64().expect("Could not parse id into u64!")
+                    &id.as_u64().unwrap_or_else(||
+                        panic!("Could not parse id {} into u64!", id)
+                    )
                 ),
                 None => false
             }
@@ -159,19 +167,25 @@ pub fn get_nodes_from_ways(elements: &Vec<Value>, ways: &Vec<OSMWay>)
     for elem in node_elements {
 
         let id: u64 = if let Some(x) = elem.get("id").cloned() {
-            x.as_u64().expect("Could not parse to node id into u64!")
+            x.as_u64().unwrap_or_else(||
+                panic!("Could not parse to id {} into u64!", x)
+            )
         } else {
             continue; //Node is invalid if it has no ID
         };
 
         let lat: f64 = if let Some(x) = elem.get("lat").cloned() {
-            x.as_f64().expect("Could not parse node latitude into f64!")
+            x.as_f64().unwrap_or_else(||
+                panic!("Could not parse latitude {} as f64", x)
+            )
         } else {
             continue; //Node is invalid if it has no lat 
         };
 
         let lon: f64 = if let Some(x) = elem.get("lon").cloned() {
-            x.as_f64().expect("Could not parse node longitude into f64!")
+            x.as_f64().unwrap_or_else(||
+                panic!("Could not parse latitude {} as f64", x)
+            )
         } else {
             continue; //Node is invalid if it has no lon
         };

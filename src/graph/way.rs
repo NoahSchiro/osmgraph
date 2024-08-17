@@ -82,7 +82,9 @@ pub fn get_osm_ways(elements: &Vec<Value>) -> Result<Vec<OSMWay>, &'static str> 
         let highway_type: String = if let Some(highway_type) = tags.get("highway") {
             highway_type
                 .as_str()
-                .expect("Could not parse highway type into str!")
+                .unwrap_or_else(||
+                    panic!("Could not parse highway type {} into str!", highway_type)
+                )
                 .to_string()
         } else {
             continue;
@@ -97,10 +99,12 @@ pub fn get_osm_ways(elements: &Vec<Value>) -> Result<Vec<OSMWay>, &'static str> 
         let nodes: Vec<u64> = e.get("nodes")
             .ok_or("Way did not contain nodes!")?
             .as_array()
-            .expect("Could not parse nodes into vec!")
+            .expect("Could not parse nodes into Vec!")
             .iter()
             .map(|x| 
-                x.as_u64().expect("Could not parse node id into u64!")
+                x.as_u64().unwrap_or_else(||
+                    panic!("Could not parse id {} into u64!", x)
+                )
             ).collect();
 
         //Add to list

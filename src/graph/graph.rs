@@ -13,7 +13,8 @@ pub fn create_graph(elements: &Vec<Value>) -> Result<UnGraph<OSMNode, OSMEdge>, 
 
     //Parse out all of the nodes and ways
     let ways: Vec<OSMWay> = get_osm_ways(elements)?;
-    let nodes: Vec<OSMNode> = get_nodes_from_ways(elements, &ways)?;
+    let nodes: Vec<OSMNode> = get_nodes_from_ways(elements, &ways)
+        .expect("Was not able to retrieve nodes from ways!");
 
     //TODO: In the future, this should support one way streets (directed graph).
     let mut result = UnGraph::<OSMNode, OSMEdge>::with_capacity(nodes.len(), ways.len());

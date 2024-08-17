@@ -92,7 +92,7 @@ impl OverpassResponse {
 }
 
 //A function to request data from the Overpass API given a particular query
-pub async fn osm_request(query: String) -> Result<String, reqwest::Error> {
+pub async fn osm_request(query: String) -> Result<String, &'static str> {
 
     let url = "https://overpass-api.de/api/interpreter";
     
@@ -101,15 +101,18 @@ pub async fn osm_request(query: String) -> Result<String, reqwest::Error> {
         .header("Content-Type", "application/x-www-form-urlencoded")
         .body(format!("data={}", query))
         .send()
-        .await?;
+        .await
+        .expect("Could not contact OverpassAPI server!");
 
     // Parse the response as JSON
-    let json_string: String = response.text().await?;
+    let json_string: String = response.text()
+        .await
+        .expect("Could not retrieve text from json!");
 
     Ok(json_string)
 }
 
-pub fn osm_request_blocking(query: String) -> Result<String, reqwest::Error> {
+pub fn osm_request_blocking(query: String) -> Result<String, &'static str> {
     Runtime::new()
         .expect("Could not create runtime!")
         .block_on(osm_request(query))
