@@ -2,6 +2,8 @@
 
 ![Example of A* path on Manhattan](./assets/manhattan_example.png)
 
+![Tests](https://github.com/NoahSchiro/osm-graph/actions/workflows/ci.yml/badge.svg)
+
 `osm-graph` is a crate for quickly fetching data from OpenStreetMap (OSM) and formatting this data
 into a graph data structure that can be used for various computer science tasks and problems.
 
