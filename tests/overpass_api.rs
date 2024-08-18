@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod query {
 
-    use osm_graph::overpass_api::{osm_request_blocking, osm_request};
+    use osmgraph::overpass_api::{osm_request_blocking, osm_request};
 
     #[tokio::test]
     async fn query() {
@@ -49,7 +49,7 @@ mod query {
 #[cfg(test)]
 mod parse {
 
-    use osm_graph::overpass_api::{OverpassResponse, osm_request};
+    use osmgraph::overpass_api::{OverpassResponse, osm_request};
     
     use serde_json::json;
 
@@ -83,7 +83,7 @@ mod parse {
 #[cfg(test)]
 mod save_load {
 
-    use osm_graph::overpass_api::{OverpassResponse, osm_request, osm_request_blocking};
+    use osmgraph::overpass_api::{OverpassResponse, osm_request, osm_request_blocking};
 
     #[tokio::test]
     async fn save_load() {

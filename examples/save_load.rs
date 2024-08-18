@@ -1,4 +1,4 @@
-use osm_graph::overpass_api::OverpassResponse;
+use osmgraph::overpass_api::OverpassResponse;
 
 fn main() {
 

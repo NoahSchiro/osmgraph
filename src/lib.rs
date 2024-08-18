@@ -1,4 +1,4 @@
-//! `osm-graph` is a crate for quickly fetching data from OpenStreetMap (OSM) and formatting this data
+//! `osmgraph` is a crate for quickly fetching data from OpenStreetMap (OSM) and formatting this data
 //! into a graph data structure that can be used for various computer science tasks and problems.
 //!
 //! [OpenStreetMap](https://www.openstreetmap.org/) is a free wiki world map. All of the data is
@@ -25,8 +25,8 @@
 //! Example of the basic utility of this crate:
 //!
 //! ```rust
-//! use osm_graph::graph::{OSMGraph, create_graph};
-//! use osm_graph::overpass_api::{OverpassResponse, osm_request_blocking};
+//! use osmgraph::graph::{OSMGraph, create_graph};
+//! use osmgraph::overpass_api::{OverpassResponse, osm_request_blocking};
 //!
 //! use serde_json::Value;
 //!
