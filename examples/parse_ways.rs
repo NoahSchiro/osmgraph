@@ -6,7 +6,7 @@ use serde_json::Value;
 fn main() {
 
     //Get json structure from disk
-    let json: OverpassResponse = OverpassResponse::load_blocking("./assets/manhattan_test.json")
+    let json: OverpassResponse = OverpassResponse::load_blocking("./assets/test.json")
         .expect("Was not able to load json!");
     println!("Parsed the json...");
 

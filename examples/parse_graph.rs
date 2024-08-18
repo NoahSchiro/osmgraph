@@ -1,4 +1,6 @@
-use osm_graph::overpass_api::OverpassResponse;
+use std::error::Error;
+
+use osm_graph::overpass_api::{OverpassResponse, osm_request_blocking};
 use osm_graph::graph::{OSMGraph, OSMNode, OSMEdge, create_graph};
 
 use serde_json::Value;
@@ -18,24 +20,19 @@ fn display(image_location: &str, graph: OSMGraph) -> Result<(), Box<dyn std::err
         .collect();
 
     //Determine the minimum and maximum nodes so we know how big to make the image
-    // let min_lat: f64 = nodes.iter().map(|node| node.lat()).min_by(|a, b| a.total_cmp(b)).unwrap();
-    // let mut max_lat: f64 = nodes.iter().map(|node| node.lat()).max_by(|a, b| a.total_cmp(b)).unwrap();
-    // let d_lat: f64 = max_lat - min_lat;
-    // let min_lon: f64 = nodes.iter().map(|node| node.lon()).min_by(|a, b| a.total_cmp(b)).unwrap();
-    // let mut max_lon: f64 = nodes.iter().map(|node| node.lon()).max_by(|a, b| a.total_cmp(b)).unwrap();
-    // let d_lon: f64 = max_lon - min_lon;
+    let min_lat: f64 = nodes.iter().map(|node| node.lat()).min_by(|a, b| a.total_cmp(b)).unwrap();
+    let mut max_lat: f64 = nodes.iter().map(|node| node.lat()).max_by(|a, b| a.total_cmp(b)).unwrap();
+    let d_lat: f64 = max_lat - min_lat;
+    let min_lon: f64 = nodes.iter().map(|node| node.lon()).min_by(|a, b| a.total_cmp(b)).unwrap();
+    let mut max_lon: f64 = nodes.iter().map(|node| node.lon()).max_by(|a, b| a.total_cmp(b)).unwrap();
+    let d_lon: f64 = max_lon - min_lon;
     
     //We want to maintain the same ratio so that the map is not streched. This will make sure that
     //one pixel on the x-axis is the same length as a pixel on the y-axis.
-    // match d_lat > d_lon {
-    //     true  => max_lon = min_lon + d_lat,
-    //     false => max_lat = min_lat + d_lon
-    // }
-
-    //Sometimes, like for manhattan, the nodes are ALL OVER THE WORLD so it doesn't show up
-    //properly on the map. Here, I will just manually set where the map needs to be.
-    let (min_lat, max_lat) = (40.68,  40.68  + 0.2);
-    let (min_lon, max_lon) = (-74.075, -74.075 + 0.25);
+    match d_lat > d_lon {
+        true  => max_lon = min_lon + d_lat,
+        false => max_lat = min_lat + d_lon
+    }
 
     // Create a new 3000x3000 image
     let root = BitMapBackend::new(image_location, (3000, 3000)).into_drawing_area();
@@ -92,6 +89,31 @@ fn display(image_location: &str, graph: OSMGraph) -> Result<(), Box<dyn std::err
     Ok(())
 }
 
+fn query_and_save(filepath: &str) -> Result<OverpassResponse, Box<dyn Error>> {
+
+    //Create a query string in the format of the Overpass Query Language
+    let query = String::from(r#"
+        [out:json];
+        area[name="Manhattan"][admin_level=7]->.searchArea;
+        (
+          way(area.searchArea);
+          node(area.searchArea);
+        );
+        out body;
+        >;
+        out skel qt;
+    "#);
+
+    //Request the data from Overpass API
+    let response: String = osm_request_blocking(query)?;
+
+    //Get json structure from the response string and then save for the future
+    let json: OverpassResponse = serde_json::from_str(&response)?;
+    let _ = json.save_blocking(filepath)?;
+ 
+    Ok(json)
+}
+
 fn main() {
 
     //Vars to change
@@ -100,7 +122,9 @@ fn main() {
 
     //Get json structure from disk
     let json: OverpassResponse = OverpassResponse::load_blocking(graph_save_location)
-        .expect("Was not able to load json!");
+        .unwrap_or_else(|_|
+            query_and_save(graph_save_location).expect("Was not able to query!")
+        );
     println!("Parsed the json!");
 
     //Get the elements
@@ -123,6 +147,4 @@ fn main() {
     //Now that we have created the graph, let's show it
     println!("Displaying to {}", image_save_location);
     display(image_save_location, g).expect("Couldn't display graph!");
-
-
 }
