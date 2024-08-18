@@ -8,18 +8,18 @@ readme = "README.md"
 license = "MIT"
 
 description = "Convert OSM queries into graphs."
-documentation = "todo!"
+#documentation = "todo!" This will not be available until we publish
 repository = "https://github.com/NoahSchiro/osm-graph"
 
 keywords = ["map", "api", "graph", "data-structure"]
-categories = ["api-bindings"]
+categories = ["api-bindings", "data-structures"]
 
 exclude = [
 	"/assets/*"
 ]
 
 [dev-dependencies]
-tokio = { version = "1.39.2", features = ["macros"] }
+tokio = { version = "1.39.2", features = ["macros"] } # Used for testing async functions
 plotters = "0.3.6" # This is used in parse_graph and astar examples
 rand = "0.8.5" # This is used in astar example
 
