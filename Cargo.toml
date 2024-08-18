@@ -1,14 +1,14 @@
 [package]
 name = "osmgraph"
 authors = ["NoahSchiro"]
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 
 readme = "README.md"
 license = "MIT"
 
 description = "Convert OSM queries into graphs."
-#documentation = "todo!" This will not be available until we publish
+documentation = "https://crates.io/crates/osmgraph"
 repository = "https://github.com/NoahSchiro/osmgraph"
 
 keywords = ["map", "api", "graph", "data-structure"]
