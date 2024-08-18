@@ -18,10 +18,15 @@ exclude = [
 	"/assets/*"
 ]
 
+[[bench]]
+name = "graph"
+harness = false
+
 [dev-dependencies]
 tokio = { version = "1.39.2", features = ["macros"] } # Used for testing async functions
 plotters = "0.3.6" # This is used in parse_graph and astar examples
 rand = "0.8.5" # This is used in astar example
+criterion = "0.5.1" # For benchmarking
 
 [dependencies]
 petgraph = "0.6.5"
