@@ -1,7 +1,11 @@
 use std::fmt;
+use std::error::Error;
 
 use serde_json::Value;
 
+/// OSMWay contains all information that we might care about in a way. Currently, it contains a
+/// way ID (as defined in Overpass API) the nodes indicies on the path, the distances between them,
+/// and the type of way (highway, street, sidewalk, etc).
 #[derive(Clone, PartialEq, PartialOrd, Debug, Default)]
 pub struct OSMWay {
     id: u64,
@@ -37,25 +41,31 @@ impl fmt::Display for OSMWay {
 //Getters and setters
 impl OSMWay {
 
+    /// Create a new OSMWay from fields.
     pub fn new(id: u64, nodes: Vec<u64>, dists: Vec<f64>, highway_type: String) -> Self {
         OSMWay { id, nodes, dists, highway_type }
     }
 
+    /// Get the way ID.
     pub fn id(&self) -> u64 {
         self.id
     }
+    /// Get the nodes on this way.
     pub fn nodes(&self) -> &Vec<u64> {
         &self.nodes
     }
+    /// Get the distances between nodes.
     pub fn dists(&self) -> &Vec<f64> {
         &self.dists
     }
+    /// Get the type of way.
     pub fn highway_type(&self) -> &str {
         &self.highway_type
     }
 }
 
-pub fn get_osm_ways(elements: &Vec<Value>) -> Result<Vec<OSMWay>, &'static str> {
+/// Given a json type structure, this function tries to parse all `OSMWay` out of that json.
+pub fn get_osm_ways(elements: &Vec<Value>) -> Result<Vec<OSMWay>, Box<dyn Error>> {
 
     //Only get OSM elements that are nodes
     let way_elements: Vec<Value> = elements.clone().into_iter()
@@ -82,9 +92,7 @@ pub fn get_osm_ways(elements: &Vec<Value>) -> Result<Vec<OSMWay>, &'static str> 
         let highway_type: String = if let Some(highway_type) = tags.get("highway") {
             highway_type
                 .as_str()
-                .unwrap_or_else(||
-                    panic!("Could not parse highway type {} into str!", highway_type)
-                )
+                .ok_or_else(|| "Could not parse highway type into str!")?
                 .to_string()
         } else {
             continue;
@@ -121,4 +129,3 @@ pub fn get_osm_ways(elements: &Vec<Value>) -> Result<Vec<OSMWay>, &'static str> 
 
     Ok(result)
 }
-
