@@ -14,6 +14,8 @@ use tokio::{
 ///
 /// Example:
 /// ```rust
+/// use osm_graph::overpass_api::{OverpassResponse, osm_request_blocking};
+///
 /// let query = String::from(r#"
 ///     [out:json];
 ///     area[name="Selinsgrove"]->.searchArea;

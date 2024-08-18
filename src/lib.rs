@@ -25,6 +25,10 @@
 //! Example of the basic utility of this crate:
 //!
 //! ```rust
+//! use osm_graph::graph::{OSMGraph, create_graph};
+//! use osm_graph::overpass_api::{OverpassResponse, osm_request_blocking};
+//!
+//! use serde_json::Value;
 //!
 //! // Query to fetch all data related to "Selinsgrove" town in Pennsylvania
 //! let query = String::from(r#"
@@ -50,7 +54,7 @@
 //!     .expect("Was not able to retrieve elements from json!");
 //!
 //! //Create graph
-//! let g: UnGraph<OSMNode, OSMEdge> = create_graph(elements)
+//! let g: OSMGraph = create_graph(elements)
 //!     .expect("Was not able to create graph from json!");
 //! ```
 

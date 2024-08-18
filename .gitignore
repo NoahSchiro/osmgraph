@@ -1,4 +1,5 @@
 /target
 
 /assets/*.json
+!/assets/manhattan_example.png
 !/assets/test.json
