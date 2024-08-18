@@ -1,5 +1,5 @@
-use osm_graph::overpass_api::OverpassResponse;
-use osm_graph::graph::way::{OSMWay, get_osm_ways};
+use osmgraph::overpass_api::OverpassResponse;
+use osmgraph::graph::way::{OSMWay, get_osm_ways};
 
 use serde_json::Value;
 

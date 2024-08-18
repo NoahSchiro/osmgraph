@@ -1,7 +1,7 @@
 [package]
-name = "osm-graph"
+name = "osmgraph"
 authors = ["NoahSchiro"]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 readme = "README.md"
@@ -9,7 +9,7 @@ license = "MIT"
 
 description = "Convert OSM queries into graphs."
 #documentation = "todo!" This will not be available until we publish
-repository = "https://github.com/NoahSchiro/osm-graph"
+repository = "https://github.com/NoahSchiro/osmgraph"
 
 keywords = ["map", "api", "graph", "data-structure"]
 categories = ["api-bindings", "data-structures"]

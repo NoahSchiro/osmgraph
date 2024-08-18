@@ -1,7 +1,7 @@
 use std::error::Error;
 
-use osm_graph::overpass_api::{OverpassResponse, osm_request_blocking};
-use osm_graph::graph::{OSMGraph, OSMNode, OSMEdge, create_graph};
+use osmgraph::overpass_api::{OverpassResponse, osm_request_blocking};
+use osmgraph::graph::{OSMGraph, OSMNode, OSMEdge, create_graph};
 
 use serde_json::Value;
 use petgraph::stable_graph::DefaultIx;

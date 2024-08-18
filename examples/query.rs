@@ -1,4 +1,4 @@
-use osm_graph::overpass_api::{osm_request_blocking, OverpassResponse};
+use osmgraph::overpass_api::{osm_request_blocking, OverpassResponse};
 
 use serde_json::Value;
 

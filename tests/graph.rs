@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod create_graph {
 
-    use osm_graph::overpass_api::OverpassResponse;
-    use osm_graph::graph::create_graph;
+    use osmgraph::overpass_api::OverpassResponse;
+    use osmgraph::graph::create_graph;
 
     use serde_json::Value;
 
