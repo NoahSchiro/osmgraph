@@ -11,6 +11,7 @@ use petgraph::algo::astar;
 use plotters::prelude::*;
 use rand::seq::IteratorRandom;
 
+// This takes a graph and displays it as an image using the plotters library
 fn display(image_location: &str, graph: OSMGraph, path: Vec<NodeIndex>) -> Result<(), Box<dyn std::error::Error>> {
 
     //Get nodes
@@ -26,12 +27,27 @@ fn display(image_location: &str, graph: OSMGraph, path: Vec<NodeIndex>) -> Resul
         path_edges.insert((path[i+1], path[i]));
     }
 
-    let min_lat: f64 = nodes.iter().map(|node| node.lat()).min_by(|a, b| a.total_cmp(b)).unwrap();
-    let max_lat: f64 = nodes.iter().map(|node| node.lat()).max_by(|a, b| a.total_cmp(b)).unwrap();
-    let min_lon: f64 = nodes.iter().map(|node| node.lon()).min_by(|a, b| a.total_cmp(b)).unwrap();
-    let max_lon: f64 = nodes.iter().map(|node| node.lon()).max_by(|a, b| a.total_cmp(b)).unwrap();
+    //Determine the minimum and maximum nodes so we know how big to make the image
+    // let min_lat: f64 = nodes.iter().map(|node| node.lat()).min_by(|a, b| a.total_cmp(b)).unwrap();
+    // let mut max_lat: f64 = nodes.iter().map(|node| node.lat()).max_by(|a, b| a.total_cmp(b)).unwrap();
+    // let d_lat: f64 = max_lat - min_lat;
+    // let min_lon: f64 = nodes.iter().map(|node| node.lon()).min_by(|a, b| a.total_cmp(b)).unwrap();
+    // let mut max_lon: f64 = nodes.iter().map(|node| node.lon()).max_by(|a, b| a.total_cmp(b)).unwrap();
+    // let d_lon: f64 = max_lon - min_lon;
+
+    //We want to maintain the same ratio so that the map is not streched. This will make sure that
+    //one pixel on the x-axis is the same length as a pixel on the y-axis.
+    // match d_lat > d_lon {
+    //     true  => max_lon = min_lon + d_lat,
+    //     false => max_lat = min_lat + d_lon
+    // }
+
+    //Sometimes, like for manhattan, the nodes are ALL OVER THE WORLD so it doesn't show up
+    //properly on the map. Here, I will just manually set where the map needs to be.
+    let (min_lat, max_lat) = (40.68,  40.68  + 0.2);
+    let (min_lon, max_lon) = (-74.075, -74.075 + 0.25);
     
-    // Create a new 2000x2000 image
+    // Create a new 3000x3000 image
     let root = BitMapBackend::new(image_location, (3000, 3000)).into_drawing_area();
     root.fill(&WHITE)?;
 
@@ -43,13 +59,14 @@ fn display(image_location: &str, graph: OSMGraph, path: Vec<NodeIndex>) -> Resul
         .y_label_area_size(30)
         .build_cartesian_2d(min_lon..max_lon, min_lat..max_lat)?;
 
+    //No grid on the image
     chart.configure_mesh()
         .x_labels(10)
         .y_labels(10)
         .disable_mesh()
         .draw()?;
 
-    // Plot the nodes as points
+    // Plot the nodes as blue points
     chart.draw_series(
         nodes.iter().map(|node| {
             Circle::new((node.lon(), node.lat()), 1, ShapeStyle::from(&BLUE))
@@ -58,7 +75,8 @@ fn display(image_location: &str, graph: OSMGraph, path: Vec<NodeIndex>) -> Resul
 
     let edges: &[Edge<OSMEdge>] = graph.raw_edges();
 
-    // Draw the edges as lines between points
+    //Draw the edges as red lines between points if they are on
+    //the path, otherwise, as black lines
     chart.draw_series(
         edges.iter().map(|edge| {
 
@@ -80,7 +98,7 @@ fn display(image_location: &str, graph: OSMGraph, path: Vec<NodeIndex>) -> Resul
 
                 //If on path, draw a different color and make it bold
                 match path_edges.contains(&(source_idx, target_idx)) {
-                    true => ShapeStyle::from(&RED).stroke_width(3),
+                    true => ShapeStyle::from(&RED).stroke_width(5),
                     false => ShapeStyle::from(&BLACK),
                 },
             )
@@ -95,17 +113,21 @@ fn display(image_location: &str, graph: OSMGraph, path: Vec<NodeIndex>) -> Resul
 
 fn main() {
 
+    //Vars to change
     let image_save_location = "./map.png";
-    let graph_save_location = "./assets/test.json";
+    let graph_save_location = "./assets/manhattan_test.json";
 
+    //Get json structure from disk
     let json: OverpassResponse = OverpassResponse::load_blocking(graph_save_location)
         .expect("Was not able to load json!");
     println!("Parsed the json!");
 
+    //Get the elements
     let elements: &Vec<Value> = json.elements().as_array()
         .expect("Was not able to get elements from json!");
     println!("{} elements in request", elements.len());
 
+    //Get the graph from the elements
     let g = create_graph(elements)
         .expect("Was not able to create graph from json!");
 
@@ -128,20 +150,22 @@ fn main() {
 
         let result: Option<(f64, Vec<NodeIndex>)> = astar(
             &g, start,              //Graph and start node
-            |finish| finish == end, // Goal condition
-            |e| e.weight().dist(),  // How to compute the weight of each edge
+            |finish| finish == end, //Goal condition
+            |e| e.weight().dist(),  //How to compute the weight of each edge
             |_| 0.                  //Estimate cost
         );
 
         //See if there is a path
         match result {
             Some((pl, p)) => break (pl, p),
-            None => println!("Was not able to find a path between {} and {}", start.index(), end.index())
-
+            None => println!(
+                "Was not able to find a path between {} and {}",
+                start.index(), end.index()
+            )
         }
     };
 
-    println!("Found a path of {} meters", path_length);
+    println!("Found a path of {:.2} meters", path_length);
 
     //Now that we have created the graph, let's show it
     println!("Displaying to {}", image_save_location);

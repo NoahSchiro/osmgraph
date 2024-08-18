@@ -1,4 +1,5 @@
 use std::fmt;
+use std::error::Error;
 
 use serde_json::Value;
 
@@ -64,7 +65,7 @@ impl OSMWay {
 }
 
 /// Given a json type structure, this function tries to parse all `OSMWay` out of that json.
-pub fn get_osm_ways(elements: &Vec<Value>) -> Result<Vec<OSMWay>, &'static str> {
+pub fn get_osm_ways(elements: &Vec<Value>) -> Result<Vec<OSMWay>, Box<dyn Error>> {
 
     //Only get OSM elements that are nodes
     let way_elements: Vec<Value> = elements.clone().into_iter()
@@ -91,9 +92,7 @@ pub fn get_osm_ways(elements: &Vec<Value>) -> Result<Vec<OSMWay>, &'static str> 
         let highway_type: String = if let Some(highway_type) = tags.get("highway") {
             highway_type
                 .as_str()
-                .unwrap_or_else(||
-                    panic!("Could not parse highway type {} into str!", highway_type)
-                )
+                .ok_or_else(|| "Could not parse highway type into str!")?
                 .to_string()
         } else {
             continue;

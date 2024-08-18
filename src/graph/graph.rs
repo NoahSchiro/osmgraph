@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::error::Error;
 
 use serde_json::Value;
 use petgraph::{graph::UnGraph, adj::NodeIndex};
@@ -13,12 +14,11 @@ use super::{
 pub type OSMGraph = UnGraph<OSMNode, OSMEdge>;
 
 /// Given a json type structure, this function tries to parse an `OSMGraph` out of that json.
-pub fn create_graph(elements: &Vec<Value>) -> Result<OSMGraph, &'static str> {
+pub fn create_graph(elements: &Vec<Value>) -> Result<OSMGraph, Box<dyn Error>> {
 
     //Parse out all of the nodes and ways
     let ways: Vec<OSMWay> = get_osm_ways(elements)?;
-    let nodes: Vec<OSMNode> = get_nodes_from_ways(elements, &ways)
-        .expect("Was not able to retrieve nodes from ways!");
+    let nodes: Vec<OSMNode> = get_nodes_from_ways(elements, &ways)?;
 
     let mut result = UnGraph::<OSMNode, OSMEdge>::with_capacity(nodes.len(), ways.len());
 
@@ -30,7 +30,7 @@ pub fn create_graph(elements: &Vec<Value>) -> Result<OSMGraph, &'static str> {
     for node in nodes {
         node_mapping.insert(
             node.id(),
-            result.add_node(node.clone()).index().try_into().unwrap()
+            result.add_node(node.clone()).index().try_into()?
         );
     }
 
@@ -49,13 +49,11 @@ pub fn create_graph(elements: &Vec<Value>) -> Result<OSMGraph, &'static str> {
             //Find petgraph node ID
             let node_index_1: NodeIndex = *node_mapping
                 .get(&node_id_1)
-                .ok_or("Node mapping contained no node!")
-                .unwrap();
+                .ok_or("Node mapping contained no node!")?;
 
             let node_index_2: NodeIndex = *node_mapping
                 .get(&node_id_2)
-                .ok_or("Node mapping contained no node!")
-                .unwrap();
+                .ok_or("Node mapping contained no node!")?;
 
             //Get nodes out of petgraph
             let n1: &OSMNode = result.node_weight(node_index_1.into())

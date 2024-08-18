@@ -1,3 +1,5 @@
+use std::io::{Error, ErrorKind};
+
 use serde::{Serialize, Deserialize};
 use serde_json::Value;
 
@@ -61,66 +63,51 @@ impl OverpassResponse {
     }
 
     /// Given a specified `filepath`, save the OverpassResponse to that location.
-    pub async fn save(&self, filepath: &str) -> Result<(), &'static str> {
+    pub async fn save(&self, filepath: &str) -> Result<(), Error> {
 
-        let list_as_json = serde_json::to_string(self).unwrap();
+        let list_as_json = serde_json::to_string(self)?;
+        let mut file = File::create(filepath).await?;
 
-        let mut file = File::create(filepath)
-            .await
-            .expect("Could not create file!");
-
-        file.write_all(list_as_json.as_bytes())
-            .await
-            .expect("Could not write to file!");
-
-        file.flush()
-            .await
-            .expect("Could not flush file!");
+        file.write_all(list_as_json.as_bytes()).await?;
+        file.flush().await?;
 
         Ok(())
     }
 
     /// Behaves the same as [`OverpassResponse::save`], but will wait for the function to finish before continuing.
-    pub fn save_blocking(&self, filepath: &str) -> Result<(), &'static str> {
-        Runtime::new()
-            .expect("Could not create runtime!")
+    pub fn save_blocking(&self, filepath: &str) -> Result<(), Error> {
+        Runtime::new()?
             .block_on(self.save(filepath))
     }
 
     /// Given a specified `filepath`, load the OverpassResponse from that location. The file is
     /// assumed to be a JSON and follow the structure of OverpassResponse.
-    pub async fn load(filepath: &str) -> Result<Self, &'static str> {
+    pub async fn load(filepath: &str) -> Result<Self, Error> {
 
-        let mut file = File::open(filepath)
-            .await
-            .expect("Could not open filepath!");
+        let mut file = File::open(filepath).await?;
 
         let mut contents = Vec::new();
 
         // Read the file's contents into the buffer
-        file.read_to_end(&mut contents)
-            .await
-            .expect("Could not read file!");
+        file.read_to_end(&mut contents).await?;
 
         let contents_as_string: String = String::from_utf8_lossy(&contents).to_string();
 
-        let json: OverpassResponse = serde_json::from_str(&contents_as_string)
-            .expect("JSON was invalid");
+        let json: OverpassResponse = serde_json::from_str(&contents_as_string)?;
 
         Ok(json)
     }
 
     /// Behaves the same as [`OverpassResponse::load`], but will wait for the function to finish before continuing.
-    pub fn load_blocking(filepath: &str) -> Result<Self, &'static str> {
-        Runtime::new()
-            .expect("Could not create runtime!")
+    pub fn load_blocking(filepath: &str) -> Result<Self, Error> {
+        Runtime::new()?
             .block_on(Self::load(filepath))
     }
 }
 
 /// Requests data from the Overpass API given a particular query. The query must conform to the
 /// Overpass Query Language.
-pub async fn osm_request(query: String) -> Result<String, &'static str> {
+pub async fn osm_request(query: String) -> Result<String, Error> {
 
     let url = "https://overpass-api.de/api/interpreter";
     
@@ -130,19 +117,18 @@ pub async fn osm_request(query: String) -> Result<String, &'static str> {
         .body(format!("data={}", query))
         .send()
         .await
-        .expect("Could not contact OverpassAPI server!");
+        .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
     // Parse the response as JSON
     let json_string: String = response.text()
         .await
-        .expect("Could not retrieve text from json!");
+        .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
     Ok(json_string)
 }
 
 /// Behaves the same as [`osm_request`], but will wait for the function to finish before continuing.
-pub fn osm_request_blocking(query: String) -> Result<String, &'static str> {
-    Runtime::new()
-        .expect("Could not create runtime!")
+pub fn osm_request_blocking(query: String) -> Result<String, Error> {
+    Runtime::new()?
         .block_on(osm_request(query))
 }

@@ -1,5 +1,6 @@
 use core::fmt;
 use std::collections::HashSet;
+use std::error::Error;
 
 use serde_json::Value;
 
@@ -64,7 +65,7 @@ pub(super) fn node_dist(n1: &OSMNode, n2: &OSMNode) -> f64 {
 }
 
 /// Given a json type structure, this function tries to parse all `OSMNodes` out of that json.
-pub fn get_osm_nodes(elements: &Vec<Value>) -> Result<Vec<OSMNode>, &'static str> {
+pub fn get_osm_nodes(elements: &Vec<Value>) -> Result<Vec<OSMNode>, Box<dyn Error>> {
 
     //Only get OSM elements that are nodes
     let node_elements: Vec<Value> = elements.clone().into_iter()
@@ -82,25 +83,19 @@ pub fn get_osm_nodes(elements: &Vec<Value>) -> Result<Vec<OSMNode>, &'static str
     for elem in node_elements {
 
         let id: u64 = if let Some(x) = elem.get("id").cloned() {
-            x.as_u64().unwrap_or_else(||
-                panic!("Could not parse id {} as u64", x)
-            )
+            x.as_u64().ok_or_else(|| "Could not parse id as u64")?
         } else {
             continue; //Node is invalid if it has no ID
         };
 
         let lat: f64 = if let Some(x) = elem.get("lat").cloned() {
-            x.as_f64().unwrap_or_else(||
-                panic!("Could not parse latitude {} as f64", x)
-            )
+            x.as_f64().ok_or_else(|| "Could not parse latitude as f64")?
         } else {
             continue; //Node is invalid if it has no lat 
         };
 
         let lon: f64 = if let Some(x) = elem.get("lon").cloned() {
-            x.as_f64().unwrap_or_else(||
-                panic!("Could not parse longitude {} as f64", x)
-            )
+            x.as_f64().ok_or_else(|| "Could not parse longitude {} as f64")?
         } else {
             continue; //Node is invalid if it has no lon
         };
@@ -137,7 +132,7 @@ pub fn filter_unconnected_nodes(ways: &Vec<OSMWay>, nodes: Vec<OSMNode>) -> Vec<
 /// Given a json type structure and a `Vec<OSMWay>`, this function tries to
 /// parse all `OSMNodes` out of that json if and only if the node lies on one of the ways provided.
 pub fn get_nodes_from_ways(elements: &Vec<Value>, ways: &Vec<OSMWay>)
-    -> Result<Vec<OSMNode>, &'static str> { 
+    -> Result<Vec<OSMNode>, Box<dyn Error>> { 
 
     //Create set of node ids
     let mut node_ids: HashSet<u64> = HashSet::new();
@@ -177,25 +172,19 @@ pub fn get_nodes_from_ways(elements: &Vec<Value>, ways: &Vec<OSMWay>)
     for elem in node_elements {
 
         let id: u64 = if let Some(x) = elem.get("id").cloned() {
-            x.as_u64().unwrap_or_else(||
-                panic!("Could not parse to id {} into u64!", x)
-            )
+            x.as_u64().ok_or_else(|| "Could not parse to id into u64!")?
         } else {
             continue; //Node is invalid if it has no ID
         };
 
         let lat: f64 = if let Some(x) = elem.get("lat").cloned() {
-            x.as_f64().unwrap_or_else(||
-                panic!("Could not parse latitude {} as f64", x)
-            )
+            x.as_f64().ok_or_else(|| "Could not parse latitude as f64")?
         } else {
             continue; //Node is invalid if it has no lat 
         };
 
         let lon: f64 = if let Some(x) = elem.get("lon").cloned() {
-            x.as_f64().unwrap_or_else(||
-                panic!("Could not parse latitude {} as f64", x)
-            )
+            x.as_f64().ok_or_else(|| "Could not parse latitude as f64")?
         } else {
             continue; //Node is invalid if it has no lon
         };
