@@ -24,42 +24,35 @@ pub fn create_graph(elements: &Vec<Value>) -> Result<OSMGraph, Box<dyn Error>> {
 
     //Petgraph has its own notion of an index so we want to map from the
     //OSM index to the petgraph one so we can add ways later on
-    let mut node_mapping: HashMap<u64, NodeIndex> = HashMap::new();
+    let mut node_mapping: HashMap<u64, NodeIndex> = HashMap::with_capacity(nodes.len());
 
     //Add nodes to mapping and to graph
     for node in nodes {
+        let petgraph_index = result.add_node(node).index() as u32;
         node_mapping.insert(
             node.id(),
-            result.add_node(node.clone()).index().try_into()?
+            petgraph_index
         );
     }
 
     //Iterate through every way
     for way in ways {
-
         let nodes = way.nodes();
 
-        //Iterate through all of the connections in way
-        for i in 0..nodes.len()-1 {
+        //Iterate through all pairs of nodes in way
+        for window in nodes.windows(2) {
 
             //Get OSM node ID
-            let node_id_1: u64 = nodes[i];
-            let node_id_2: u64 = nodes[i+1];
+            let node_id_1: u64 = window[0];
+            let node_id_2: u64 = window[1];
 
             //Find petgraph node ID
-            let node_index_1: NodeIndex = *node_mapping
-                .get(&node_id_1)
-                .ok_or("Node mapping contained no node!")?;
-
-            let node_index_2: NodeIndex = *node_mapping
-                .get(&node_id_2)
-                .ok_or("Node mapping contained no node!")?;
+            let node_index_1: NodeIndex = node_mapping[&node_id_1];
+            let node_index_2: NodeIndex = node_mapping[&node_id_2];
 
             //Get nodes out of petgraph
-            let n1: &OSMNode = result.node_weight(node_index_1.into())
-                .ok_or("Could not find node index!")?;
-            let n2: &OSMNode = result.node_weight(node_index_2.into())
-                .ok_or("Could not find node index!")?;
+            let n1: &OSMNode = result.node_weight(node_index_1.into()).unwrap();
+            let n2: &OSMNode = result.node_weight(node_index_2.into()).unwrap();
 
             //Insert edge into graph
             result.add_edge(

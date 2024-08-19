@@ -77,7 +77,7 @@ pub fn get_osm_ways(elements: &Vec<Value>) -> Result<Vec<OSMWay>, Box<dyn Error>
         })
         .collect();
 
-    let mut result: Vec<OSMWay> = Vec::new();
+    let mut result: Vec<OSMWay> = Vec::with_capacity(way_elements.len());
 
     for e in way_elements {
 
@@ -90,10 +90,7 @@ pub fn get_osm_ways(elements: &Vec<Value>) -> Result<Vec<OSMWay>, Box<dyn Error>
 
         //If not a highway, then skip
         let highway_type: String = if let Some(highway_type) = tags.get("highway") {
-            highway_type
-                .as_str()
-                .ok_or_else(|| "Could not parse highway type into str!")?
-                .to_string()
+            highway_type.to_string()
         } else {
             continue;
         };
