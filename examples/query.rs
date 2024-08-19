@@ -1,25 +1,22 @@
-use osmgraph::overpass_api::{osm_request_blocking, OverpassResponse};
+use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
 
 use serde_json::Value;
 
 fn main() {
 
     //Create a query string in the format of the Overpass Query Language
-    let query = String::from(r#"
-        [out:json];
-        area[name="Selinsgrove"]->.searchArea;
-        (
-          way(area.searchArea);
-          node(area.searchArea);
-        );
-        out body;
-        >;
-        out skel qt;
-    "#);
-
-    //Request the data from Overpass API
-    let response: String = osm_request_blocking(query)
-        .expect("Was not able to request OSM!");
+    let response = QueryEngine::new()
+        .query_blocking(r#"
+            [out:json];
+            area[name="Manhattan"][admin_level=7]->.searchArea;
+            (
+              way(area.searchArea);
+              node(area.searchArea);
+            );
+            out body;
+            >;
+            out skel qt;"#.to_string()
+        ).expect("Could not query OSM!");
 
     println!("Request complete!");
 

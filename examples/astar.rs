@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::error::Error;
 
-use osmgraph::overpass_api::{OverpassResponse, osm_request_blocking};
+use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
 use osmgraph::graph::{OSMGraph, OSMNode, OSMEdge, create_graph};
 
 use serde_json::Value;
@@ -112,20 +112,18 @@ fn query_and_save(filepath: &str) -> Result<OverpassResponse, Box<dyn Error>> {
     println!("Could not find file... querying...");
 
     //Create a query string in the format of the Overpass Query Language
-    let query = String::from(r#"
-        [out:json];
-        area[name="Manhattan"][admin_level=7]->.searchArea;
-        (
-          way(area.searchArea);
-          node(area.searchArea);
-        );
-        out body;
-        >;
-        out skel qt;
-    "#);
-
-    //Request the data from Overpass API
-    let response: String = osm_request_blocking(query)?;
+    let response = QueryEngine::new()
+        .query_blocking(r#"
+            [out:json];
+            area[name="Manhattan"][admin_level=7]->.searchArea;
+            (
+              way(area.searchArea);
+              node(area.searchArea);
+            );
+            out body;
+            >;
+            out skel qt;"#.to_string()
+        ).expect("Could not query OSM!");
 
     //Get json structure from the response string and then save for the future
     let json: OverpassResponse = serde_json::from_str(&response)?;

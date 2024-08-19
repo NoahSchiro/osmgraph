@@ -1,11 +1,14 @@
 #[cfg(test)]
 mod query {
 
-    use osmgraph::overpass_api::{osm_request_blocking, osm_request};
+    use osmgraph::overpass_api::QueryEngine;
 
     #[tokio::test]
     async fn query() {
-        let query = String::from(r#"
+
+        let engine = QueryEngine::new();
+
+        let response: String = engine.query(r#"
             [out:json];
             area[name="Selinsgrove"]->.searchArea;
             (
@@ -15,11 +18,8 @@ mod query {
             out body;
             >;
             out skel qt;
-        "#);
-
-        let response: String = osm_request(query)
-            .await
-            .expect("OSM request failed!");
+        "#.to_string()
+        ).await.expect("OSM request failed!");
 
         assert!(response.len() > 0)
     }
@@ -27,7 +27,10 @@ mod query {
 
     #[test]
     fn query_blocking() {
-        let query = String::from(r#"
+
+        let engine = QueryEngine::new();
+
+        let response: String = engine.query_blocking(r#"
             [out:json];
             area[name="Selinsgrove"]->.searchArea;
             (
@@ -37,10 +40,7 @@ mod query {
             out body;
             >;
             out skel qt;
-        "#);
-
-        let response: String = osm_request_blocking(query)
-            .expect("OSM request failed!");
+        "#.to_string()).expect("OSM request failed!");
 
         assert!(response.len() > 0)
     }
@@ -49,13 +49,16 @@ mod query {
 #[cfg(test)]
 mod parse {
 
-    use osmgraph::overpass_api::{OverpassResponse, osm_request};
+    use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
     
     use serde_json::json;
 
     #[tokio::test]
     async fn parse() {
-        let query = String::from(r#"
+
+        let engine = QueryEngine::new();
+
+        let response: String = engine.query(r#"
             [out:json];
             area[name="Selinsgrove"]->.searchArea;
             (
@@ -65,11 +68,7 @@ mod parse {
             out body;
             >;
             out skel qt;
-        "#);
-
-        let response: String = osm_request(query)
-            .await
-            .expect("OSM request failed!");
+        "#.to_string()).await.expect("OSM request failed!");
 
         let json: OverpassResponse = serde_json::from_str(&response).unwrap();
 
@@ -83,12 +82,14 @@ mod parse {
 #[cfg(test)]
 mod save_load {
 
-    use osmgraph::overpass_api::{OverpassResponse, osm_request, osm_request_blocking};
+    use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
 
     #[tokio::test]
     async fn save_load() {
 
-        let query = String::from(r#"
+        let engine = QueryEngine::new();
+
+        let response: String = engine.query(r#"
             [out:json];
             area[name="Selinsgrove"]->.searchArea;
             (
@@ -98,11 +99,7 @@ mod save_load {
             out body;
             >;
             out skel qt;
-        "#);
-
-        let response: String = osm_request(query)
-            .await
-            .expect("OSM request failed!");
+        "#.to_string()).await.expect("OSM request failed!");
 
         let json: OverpassResponse = serde_json::from_str(&response).unwrap();
 
@@ -118,7 +115,9 @@ mod save_load {
     #[test]
     fn save_load_blocking() {
         
-        let query = String::from(r#"
+        let engine = QueryEngine::new();
+
+        let response: String = engine.query_blocking(r#"
             [out:json];
             area[name="Selinsgrove"]->.searchArea;
             (
@@ -128,11 +127,8 @@ mod save_load {
             out body;
             >;
             out skel qt;
-        "#);
-
-        let response: String = osm_request_blocking(query)
-            .expect("OSM request failed!");
-
+        "#.to_string()).expect("OSM request failed!");
+        
         let json: OverpassResponse = serde_json::from_str(&response).unwrap();
 
         json.save_blocking("./assets/test.json")

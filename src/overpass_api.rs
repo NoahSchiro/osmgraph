@@ -9,14 +9,91 @@ use tokio::{
     runtime::Runtime
 };
 
-/// `OverpassResponse` is the basic structure that we expect the `osm_request` string to return.
+/// QueryEngine
+#[derive(Clone, Debug, Default)]
+pub struct QueryEngine {
+    client: reqwest::Client,
+    base_url: String,
+}
+
+impl QueryEngine {
+
+    /// Creates a new instance of the query engine with the base url set to:
+    ///
+    /// "https://overpass-api.de/api/interpreter"
+    ///
+    /// QueryEngine also has a default set of filters for ways. The filter is currently set to only
+    /// fetch roads that can be driven on with a car. However, you might be interested in
+    /// footpaths, railroads, etc. If you would like to change the filter, take a look at
+    /// https://wiki.openstreetmap.org/wiki/Key:highway for more information on the options
+    /// available.
+    ///
+    /// Similarly, the QueryEngine
+    pub fn new() -> Self {
+        Self {
+            client: reqwest::Client::new(),
+            base_url: "https://overpass-api.de/api/interpreter".to_string(),
+        }
+    }
+
+    /// Getter for the base URL that the QueryEngine uses.
+    pub fn url(&self) -> &str {
+        &self.base_url
+    }
+
+    /// Set a new url to query. Meant to be used in a functional style
+    ///
+    /// ```rust
+    /// use osmgraph::overpass_api::QueryEngine;
+    ///
+    /// let engine = QueryEngine::new()
+    ///     .with_url("www.url_example.com".to_string());
+    /// ```
+    pub fn with_url(&self, new_url: String) -> Self {
+        Self {
+            base_url: new_url,
+            ..self.clone()
+        }
+    }
+
+    /// Requests data from the Overpass API given a particular query. The query must conform to the
+    /// Overpass Query Language.
+    pub async fn query(&self, query: String) -> Result<String, Error> {
+
+        let response = self.client
+            .post(&self.base_url)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(format!("data={}", query))
+            .send()
+            .await
+            .map_err(|e| Error::new(ErrorKind::Other, e))?;
+
+        // Parse the response as JSON
+        let json_string: String = response.text()
+            .await
+            .map_err(|e| Error::new(ErrorKind::Other, e))?;
+
+        Ok(json_string)
+    }
+
+    /// Behaves the same as [`query`], but will wait for the function to finish before continuing.
+    pub fn query_blocking(&self, query: String) -> Result<String, Error> {
+        Runtime::new()?
+            .block_on(self.query(query))
+    }
+}
+
+/// `OverpassResponse` is the basic structure that we expect the OSM to respond with.
 /// Serde JSON helps us parse this string into the correct data structure.
 ///
 /// Example:
 /// ```rust
-/// use osmgraph::overpass_api::{OverpassResponse, osm_request_blocking};
+/// use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
 ///
-/// let query = String::from(r#"
+/// let engine = QueryEngine::new();
+///
+/// //Make the request
+/// let response: String = engine.query_blocking(r#"
 ///     [out:json];
 ///     area[name="Selinsgrove"]->.searchArea;
 ///     (
@@ -26,9 +103,8 @@ use tokio::{
 ///     out body;
 ///     >;
 ///     out skel qt;
-/// "#);
-/// let response: String = osm_request_blocking(query)
-///     .expect("Was not able to request OSM!");
+/// "#.to_string()).expect("Was not able to request OSM!");
+///
 /// let json: OverpassResponse = serde_json::from_str(&response)
 ///     .expect("Was not able to parse json!");
 /// ```
@@ -105,32 +181,4 @@ impl OverpassResponse {
         Runtime::new()?
             .block_on(Self::load(filepath))
     }
-}
-
-/// Requests data from the Overpass API given a particular query. The query must conform to the
-/// Overpass Query Language.
-pub async fn osm_request(query: String) -> Result<String, Error> {
-
-    let url = "https://overpass-api.de/api/interpreter";
-    
-    let client = reqwest::Client::new();
-    let response = client.post(url)
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(format!("data={}", query))
-        .send()
-        .await
-        .map_err(|e| Error::new(ErrorKind::Other, e))?;
-
-    // Parse the response as JSON
-    let json_string: String = response.text()
-        .await
-        .map_err(|e| Error::new(ErrorKind::Other, e))?;
-
-    Ok(json_string)
-}
-
-/// Behaves the same as [`osm_request`], but will wait for the function to finish before continuing.
-pub fn osm_request_blocking(query: String) -> Result<String, Error> {
-    Runtime::new()?
-        .block_on(osm_request(query))
 }
