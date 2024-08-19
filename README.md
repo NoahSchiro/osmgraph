@@ -1,5 +1,7 @@
 # OSMGraph
 
+:warning: This is experimental software and pre-release (below v1.0). The API is subject to change. :warning:
+
 ![Example of A* path on Manhattan](./assets/manhattan_example.png)
 
 ![Tests](https://github.com/NoahSchiro/osmgraph/actions/workflows/ci.yml/badge.svg)
