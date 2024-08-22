@@ -76,10 +76,10 @@ impl QueryEngine {
     /// use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
     ///
     /// let response: String = QueryEngine::new()
-    ///     .get_area_blocking("Selinsgrove".to_string(), Some(7))
+    ///     .query_place_blocking("Selinsgrove".to_string(), Some(7))
     ///     .expect("Could not query the server!");
     /// ```
-    pub async fn get_area(&self, area_name: String, admin_level: Option<usize>) -> Result<String, Error> {
+    pub async fn query_place(&self, area_name: String, admin_level: Option<usize>) -> Result<String, Error> {
 
         let this_admin_level: String = match admin_level {
             Some(num) => format!("[admin_level={num}]"),
@@ -100,10 +100,10 @@ impl QueryEngine {
         )).await
     }
 
-    /// This function does the same thing as [`get_area`] but waits for the request to complete
-    pub fn get_area_blocking(&self, area_name: String, admin_level: Option<usize>) -> Result<String, Error> {
+    /// This function does the same thing as [`query_place`] but waits for the request to complete
+    pub fn query_place_blocking(&self, area_name: String, admin_level: Option<usize>) -> Result<String, Error> {
         Runtime::new()?
-            .block_on(self.get_area(area_name, admin_level))
+            .block_on(self.query_place(area_name, admin_level))
     }
 
     /// Requests data from the Overpass API given a particular query. The query must conform to the

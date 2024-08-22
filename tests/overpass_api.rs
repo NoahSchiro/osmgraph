@@ -24,14 +24,14 @@ mod query {
         assert!(response.len() > 0);
 
         let next_response: String = engine
-            .get_area("Selinsgrove".to_string(), None)
+            .query_place("Selinsgrove".to_string(), None)
             .await
             .expect("OSM request failed!");
 
         assert!(next_response.len() > 0);
 
         let third_response: String = engine
-            .get_area("Selinsgrove".to_string(), Some(8))
+            .query_place("Selinsgrove".to_string(), Some(8))
             .await
             .expect("OSM request failed!");
 
@@ -59,13 +59,13 @@ mod query {
         assert!(response.len() > 0);
 
         let next_response: String = engine
-            .get_area_blocking("Selinsgrove".to_string(), None)
+            .query_place_blocking("Selinsgrove".to_string(), None)
             .expect("OSM request failed!");
 
         assert!(next_response.len() > 0);
 
         let third_response: String = engine
-            .get_area_blocking("Selinsgrove".to_string(), Some(8))
+            .query_place_blocking("Selinsgrove".to_string(), Some(8))
             .expect("OSM request failed!");
 
         assert!(third_response.len() > 0);

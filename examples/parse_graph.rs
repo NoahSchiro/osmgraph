@@ -93,7 +93,7 @@ fn query_and_save(filepath: &str) -> Result<OverpassResponse, Box<dyn Error>> {
 
     //Get the Manhattan area
     let response = QueryEngine::new()
-        .get_area_blocking("Manhattan".to_string(), Some(7))
+        .query_place_blocking("Manhattan".to_string(), Some(7))
         .expect("Could not query OSM!");
 
     //Get json structure from the response string and then save for the future
