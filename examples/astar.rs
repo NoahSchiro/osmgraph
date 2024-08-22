@@ -112,6 +112,7 @@ fn query_and_save(filepath: &str) -> Result<OverpassResponse, Box<dyn Error>> {
     println!("Could not find file... querying...");
 
     //Create a query string in the format of the Overpass Query Language
+    //This is the more manual way (but with greater levels of control!
     let response = QueryEngine::new()
         .query_blocking(r#"
             [out:json];

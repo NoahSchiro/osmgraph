@@ -21,7 +21,21 @@ mod query {
         "#.to_string()
         ).await.expect("OSM request failed!");
 
-        assert!(response.len() > 0)
+        assert!(response.len() > 0);
+
+        let next_response: String = engine
+            .get_area("Selinsgrove".to_string(), None)
+            .await
+            .expect("OSM request failed!");
+
+        assert!(next_response.len() > 0);
+
+        let third_response: String = engine
+            .get_area("Selinsgrove".to_string(), Some(8))
+            .await
+            .expect("OSM request failed!");
+
+        assert!(third_response.len() > 0);
     }
 
 
@@ -42,7 +56,20 @@ mod query {
             out skel qt;
         "#.to_string()).expect("OSM request failed!");
 
-        assert!(response.len() > 0)
+        assert!(response.len() > 0);
+
+        let next_response: String = engine
+            .get_area_blocking("Selinsgrove".to_string(), None)
+            .expect("OSM request failed!");
+
+        assert!(next_response.len() > 0);
+
+        let third_response: String = engine
+            .get_area_blocking("Selinsgrove".to_string(), Some(8))
+            .expect("OSM request failed!");
+
+        assert!(third_response.len() > 0);
+
     }
 }
 

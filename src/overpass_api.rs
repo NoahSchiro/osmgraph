@@ -56,6 +56,56 @@ impl QueryEngine {
         }
     }
 
+    /// Given an area name, like "Manhattan" or "Germany", and an admin level, return the nodes and
+    /// ways for that specific area.
+    ///
+    /// Admin level is a number that represents the scope of area you are interested in. In
+    /// general:
+    /// admin_level=2: Usually represents countries
+    /// admin_level=4: Often represents states, provinces, or regions
+    /// admin_level=6: May represent counties or districts
+    /// admin_level=8: Often represents municipalities, cities, or towns
+    /// admin_level=10: May represent neighborhoods or suburbs
+    ///
+    /// If you don't want to worry about admin levels, it is not required but will generally
+    /// improve the results of your query.
+    ///
+    /// Example: 
+    ///
+    /// ```rust
+    /// use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
+    ///
+    /// let response: String = QueryEngine::new()
+    ///     .get_area_blocking("Selinsgrove".to_string(), Some(7))
+    ///     .expect("Could not query the server!");
+    /// ```
+    pub async fn get_area(&self, area_name: String, admin_level: Option<usize>) -> Result<String, Error> {
+
+        let this_admin_level: String = match admin_level {
+            Some(num) => format!("[admin_level={num}]"),
+            None => "".to_string(),
+        };
+
+        //Return a query with the specified city name
+        self.query(format!(r#"
+            [out:json];
+            area[name="{area_name}"]{this_admin_level}->.searchArea;
+            (
+              way(area.searchArea);
+              node(area.searchArea);
+            );
+            out body;
+            >;
+            out skel qt;"#
+        )).await
+    }
+
+    /// This function does the same thing as [`get_area`] but waits for the request to complete
+    pub fn get_area_blocking(&self, area_name: String, admin_level: Option<usize>) -> Result<String, Error> {
+        Runtime::new()?
+            .block_on(self.get_area(area_name, admin_level))
+    }
+
     /// Requests data from the Overpass API given a particular query. The query must conform to the
     /// Overpass Query Language.
     pub async fn query(&self, query: String) -> Result<String, Error> {
