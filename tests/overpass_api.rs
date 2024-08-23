@@ -36,6 +36,19 @@ mod query {
             .expect("OSM request failed!");
 
         assert!(third_response.len() > 0);
+
+        let fourth_response: String = engine
+            .query_poly(vec![
+                (32.407, -64.896),
+                (32.407, -64.630),
+                (32.224, -64.630),
+                (32.224, -64.896),
+                (32.407, -64.896),
+            ])
+            .await
+            .expect("OSM request failed!");
+
+        assert!(fourth_response.len() > 0);
     }
 
 
@@ -70,6 +83,17 @@ mod query {
 
         assert!(third_response.len() > 0);
 
+        let fourth_response: String = engine
+            .query_poly_blocking(vec![
+                (32.407, -64.896),
+                (32.407, -64.630),
+                (32.224, -64.630),
+                (32.224, -64.896),
+                (32.407, -64.896),
+            ])
+            .expect("OSM request failed!");
+
+        assert!(fourth_response.len() > 0);
     }
 }
 
