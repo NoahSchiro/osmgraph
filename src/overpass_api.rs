@@ -14,6 +14,7 @@ use tokio::{
 pub struct QueryEngine {
     client: reqwest::Client,
     base_url: String,
+    way_filters: Vec<String>,
 }
 
 impl QueryEngine {
@@ -28,11 +29,23 @@ impl QueryEngine {
     /// https://wiki.openstreetmap.org/wiki/Key:highway for more information on the options
     /// available.
     ///
-    /// Similarly, the QueryEngine
+    /// Note that these filters are only applied when using higher level api calls such as
+    /// [`query_place`]. The lowest level api call, [`query`] directly sends your query to the api
+    /// without any modification.
     pub fn new() -> Self {
         Self {
             client: reqwest::Client::new(),
             base_url: "https://overpass-api.de/api/interpreter".to_string(),
+            way_filters: vec![
+                String::from("motorway"),
+                String::from("trunk"),
+                String::from("primary"),
+                String::from("secondary"),
+                String::from("tertiary"),
+                String::from("unclassified"),
+                String::from("residential"),
+                String::from("service")
+            ].into_iter().collect()
         }
     }
 
@@ -52,6 +65,26 @@ impl QueryEngine {
     pub fn with_url(&self, new_url: String) -> Self {
         Self {
             base_url: new_url,
+            ..self.clone()
+        }
+    }
+
+    /// Getter for the default way filters used in queries.
+    pub fn filters(&self) -> &Vec<String> {
+        &self.way_filters
+    }
+
+    /// Set new way filters in queries. Meant to be used in a functional style
+    ///
+    /// ```rust
+    /// use osmgraph::overpass_api::QueryEngine;
+    ///
+    /// let engine = QueryEngine::new()
+    ///     .with_filters(vec![String::from("motorway")]);
+    /// ```
+    pub fn with_filters(&self, new_filters: Vec<String>) -> Self {
+        Self {
+            way_filters: new_filters,
             ..self.clone()
         }
     }
@@ -86,16 +119,29 @@ impl QueryEngine {
             None => "".to_string(),
         };
 
+        let way_filter: String = match &self.way_filters.len() {
+            0 => "(area.searchArea)".to_string(),
+            _ => {
+                format!("[\"highway\"~\"{}\"](area.searchArea)",
+                    &self.way_filters.join("|"))
+            }
+        };
+
         //Return a query with the specified city name
         self.query(format!(r#"
             [out:json];
             area[name="{area_name}"]{this_admin_level}->.searchArea;
+
+            //Find all ways according to filter
             (
-              way(area.searchArea);
-              node(area.searchArea);
+              way{way_filter};
             );
-            out body;
-            >;
+
+            //Get nodes associated with ways defined before
+            (._; >;);
+
+            out body; >;
+
             out skel qt;"#
         )).await
     }
