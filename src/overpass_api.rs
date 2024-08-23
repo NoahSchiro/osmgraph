@@ -152,6 +152,74 @@ impl QueryEngine {
             .block_on(self.query_place(area_name, admin_level))
     }
 
+    /// Given a closed polygon, return all of the nodes and ways within that polygon.
+    ///
+    /// **Note**: the first and last element of the vector must be the same!
+    ///
+    /// Example: 
+    ///
+    /// ```rust
+    /// use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
+    /// 
+    /// //A big box
+    /// let poly = vec![
+    ///     (40.0, -76.0),
+    ///     (41.0, -76.0),
+    ///     (41.0, -75.0),
+    ///     (40.0, -75.0),
+    ///     (40.0, -76.0),
+    /// ];
+    ///
+    /// let response: String = QueryEngine::new()
+    ///     .query_poly_blocking(vec![
+    ///         (32.407, -64.896),
+    ///         (32.407, -64.630),
+    ///         (32.224, -64.630),
+    ///         (32.224, -64.896),
+    ///         (32.407, -64.896),
+    ///     ])
+    ///     .expect("Could not query the server!");
+    /// ```
+    pub async fn query_poly(&self, polygon: Vec<(f64, f64)>) -> Result<String, Error> {
+
+        assert!(polygon[0] == polygon[polygon.len()-1], "Beginning and end of polygon must be the same point!");
+
+        let polyline_string: String = polygon
+            .iter()
+            .map(|(lat, lon)| format!("{lat} {lon}"))
+            .collect::<Vec<String>>()
+            .join(" ");
+
+        let way_filter: String = match &self.way_filters.len() {
+            0 => "".to_string(),
+            _ => {
+                format!("[\"highway\"~\"{}\"]",
+                    &self.way_filters.join("|"))
+            }
+        };
+
+        //Return a query with the specified city name
+        self.query(format!(r#"
+            [out:json];
+
+            //Get the ways from the polygon
+            way{way_filter}(poly:"{polyline_string}");
+
+            //Get the nodes and anything else on the way
+            (._; >;);
+
+            out body; >;
+
+            out skel qt;"#
+        )).await
+    }
+
+    /// This function does the same thing as [`query_poly`] but waits for the request to complete
+    pub fn query_poly_blocking(&self, polygon: Vec<(f64, f64)>) -> Result<String, Error> {
+        Runtime::new()?
+            .block_on(self.query_poly(polygon))
+    }
+
     /// Requests data from the Overpass API given a particular query. The query must conform to the
     /// Overpass Query Language.
     pub async fn query(&self, query: String) -> Result<String, Error> {
