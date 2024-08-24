@@ -1,5 +1,7 @@
 # OSMGraph
 
+:warning: This is experimental software and pre-release (below v1.0). The API is subject to change. :warning:
+
 ![Example of A* path on Manhattan](./assets/manhattan_example.png)
 
 ![Tests](https://github.com/NoahSchiro/osmgraph/actions/workflows/ci.yml/badge.svg)
@@ -32,9 +34,11 @@ as A*) for free.
 
 ```rust
 use osmgraph::graph::{OSMGraph, create_graph};
-use osmgraph::overpass_api::{OverpassResponse, osm_request_blocking};
+use osmgraph::overpass_api::{OverpassResponse, QueryEngine};
 
 use serde_json::Value;
+
+let engine = QueryEngine::new();
 
 // Query to fetch all data related to "Selinsgrove" town in Pennsylvania
 let query = String::from(r#"
@@ -50,7 +54,7 @@ let query = String::from(r#"
 "#);
 
 // Make the request and get the resulting data in a raw string
-let response: String = osm_request_blocking(query)
+let response: String = engine.query_blocking(query)
     .expect("Was not able to make request!");
 
 // Parse json

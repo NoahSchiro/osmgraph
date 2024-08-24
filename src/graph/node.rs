@@ -78,24 +78,24 @@ pub fn get_osm_nodes(elements: &Vec<Value>) -> Result<Vec<OSMNode>, Box<dyn Erro
         .collect();
 
     //Result to collect into
-    let mut result: Vec<OSMNode> = vec![];
+    let mut result: Vec<OSMNode> = Vec::with_capacity(node_elements.len());
 
     for elem in node_elements {
 
         let id: u64 = if let Some(x) = elem.get("id").cloned() {
-            x.as_u64().ok_or_else(|| "Could not parse id as u64")?
+            x.as_u64().unwrap()
         } else {
             continue; //Node is invalid if it has no ID
         };
 
         let lat: f64 = if let Some(x) = elem.get("lat").cloned() {
-            x.as_f64().ok_or_else(|| "Could not parse latitude as f64")?
+            x.as_f64().unwrap()
         } else {
             continue; //Node is invalid if it has no lat 
         };
 
         let lon: f64 = if let Some(x) = elem.get("lon").cloned() {
-            x.as_f64().ok_or_else(|| "Could not parse longitude {} as f64")?
+            x.as_f64().unwrap()
         } else {
             continue; //Node is invalid if it has no lon
         };
@@ -115,7 +115,7 @@ pub fn get_osm_nodes(elements: &Vec<Value>) -> Result<Vec<OSMNode>, Box<dyn Erro
 pub fn filter_unconnected_nodes(ways: &Vec<OSMWay>, nodes: Vec<OSMNode>) -> Vec<OSMNode> {
 
     //Create set of node ids
-    let mut node_ids: HashSet<u64> = HashSet::new();
+    let mut node_ids: HashSet<u64> = HashSet::with_capacity(ways.len());
     for way in ways {
         for id in way.nodes().clone() {
             node_ids.insert(id);
@@ -135,7 +135,7 @@ pub fn get_nodes_from_ways(elements: &Vec<Value>, ways: &Vec<OSMWay>)
     -> Result<Vec<OSMNode>, Box<dyn Error>> { 
 
     //Create set of node ids
-    let mut node_ids: HashSet<u64> = HashSet::new();
+    let mut node_ids: HashSet<u64> = HashSet::with_capacity(ways.len());
     for way in ways {
         for id in way.nodes().clone() {
             node_ids.insert(id);
@@ -157,9 +157,7 @@ pub fn get_nodes_from_ways(elements: &Vec<Value>, ways: &Vec<OSMWay>)
         .filter(|e| {
             match e.get("id") {
                 Some(id) => node_ids.contains(
-                    &id.as_u64().unwrap_or_else(||
-                        panic!("Could not parse id {} into u64!", id)
-                    )
+                    &id.as_u64().unwrap()
                 ),
                 None => false
             }
@@ -172,19 +170,19 @@ pub fn get_nodes_from_ways(elements: &Vec<Value>, ways: &Vec<OSMWay>)
     for elem in node_elements {
 
         let id: u64 = if let Some(x) = elem.get("id").cloned() {
-            x.as_u64().ok_or_else(|| "Could not parse to id into u64!")?
+            x.as_u64().unwrap()
         } else {
             continue; //Node is invalid if it has no ID
         };
 
         let lat: f64 = if let Some(x) = elem.get("lat").cloned() {
-            x.as_f64().ok_or_else(|| "Could not parse latitude as f64")?
+            x.as_f64().unwrap()
         } else {
             continue; //Node is invalid if it has no lat 
         };
 
         let lon: f64 = if let Some(x) = elem.get("lon").cloned() {
-            x.as_f64().ok_or_else(|| "Could not parse latitude as f64")?
+            x.as_f64().unwrap()
         } else {
             continue; //Node is invalid if it has no lon
         };

@@ -26,12 +26,14 @@
 //!
 //! ```rust
 //! use osmgraph::graph::{OSMGraph, create_graph};
-//! use osmgraph::overpass_api::{OverpassResponse, osm_request_blocking};
+//! use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
 //!
 //! use serde_json::Value;
 //!
 //! // Query to fetch all data related to "Selinsgrove" town in Pennsylvania
-//! let query = String::from(r#"
+//! let engine = QueryEngine::new();
+//!
+//! let response: String = engine.query_blocking(r#"
 //!     [out:json];
 //!     area[name="Selinsgrove"]->.searchArea;
 //!     (
@@ -40,12 +42,8 @@
 //!     );
 //!     out body;
 //!     >;
-//!     out skel qt;
-//! "#);
-//!
-//! // Make the request and get the resulting data in a raw string
-//! let response: String = osm_request_blocking(query)
-//!     .expect("Was not able to make request!");
+//!     out skel qt;"#.to_string()
+//! ).expect("Could not make a request to OSM!");
 //!
 //! // Parse json
 //! let json: OverpassResponse = serde_json::from_str(&response)
