@@ -9,7 +9,9 @@ use tokio::{
     runtime::Runtime
 };
 
-/// QueryEngine
+/// QueryEngine is a structure that helps create queries to the Overpass API.
+/// It allows us to make lower level API calls (with the Overpass QL) as well as some higher level
+/// API calls such as just fetching a place of interest or a polygon of interest.
 #[derive(Clone, Debug, Default)]
 pub struct QueryEngine {
     client: reqwest::Client,
@@ -21,16 +23,16 @@ impl QueryEngine {
 
     /// Creates a new instance of the query engine with the base url set to:
     ///
-    /// "https://overpass-api.de/api/interpreter"
+    /// <https://overpass-api.de/api/interpreter>
     ///
     /// QueryEngine also has a default set of filters for ways. The filter is currently set to only
     /// fetch roads that can be driven on with a car. However, you might be interested in
     /// footpaths, railroads, etc. If you would like to change the filter, take a look at
-    /// https://wiki.openstreetmap.org/wiki/Key:highway for more information on the options
+    /// <https://wiki.openstreetmap.org/wiki/Key:highway> for more information on the options
     /// available.
     ///
     /// Note that these filters are only applied when using higher level api calls such as
-    /// [`query_place`]. The lowest level api call, [`query`] directly sends your query to the api
+    /// [`Self::query_place`]. The lowest level api call, [`Self::query`] directly sends your query to the api
     /// without any modification.
     pub fn new() -> Self {
         Self {
@@ -146,7 +148,7 @@ impl QueryEngine {
         )).await
     }
 
-    /// This function does the same thing as [`query_place`] but waits for the request to complete
+    /// This function does the same thing as [`Self::query_place`] but waits for the request to complete
     pub fn query_place_blocking(&self, area_name: String, admin_level: Option<usize>) -> Result<String, Error> {
         Runtime::new()?
             .block_on(self.query_place(area_name, admin_level))
@@ -214,7 +216,7 @@ impl QueryEngine {
         )).await
     }
 
-    /// This function does the same thing as [`query_poly`] but waits for the request to complete
+    /// This function does the same thing as [`Self::query_poly`] but waits for the request to complete
     pub fn query_poly_blocking(&self, polygon: Vec<(f64, f64)>) -> Result<String, Error> {
         Runtime::new()?
             .block_on(self.query_poly(polygon))
@@ -240,7 +242,7 @@ impl QueryEngine {
         Ok(json_string)
     }
 
-    /// Behaves the same as [`query`], but will wait for the function to finish before continuing.
+    /// Behaves the same as [`Self::query`], but will wait for the function to finish before continuing.
     pub fn query_blocking(&self, query: String) -> Result<String, Error> {
         Runtime::new()?
             .block_on(self.query(query))
