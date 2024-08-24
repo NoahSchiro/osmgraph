@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use osmgraph::overpass_api::{OverpassResponse, osm_request_blocking};
+use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
 use osmgraph::graph::{OSMGraph, OSMNode, OSMEdge, create_graph};
 
 use serde_json::Value;
@@ -91,25 +91,22 @@ fn display(image_location: &str, graph: OSMGraph) -> Result<(), Box<dyn std::err
 
 fn query_and_save(filepath: &str) -> Result<OverpassResponse, Box<dyn Error>> {
 
-    //Create a query string in the format of the Overpass Query Language
-    let query = String::from(r#"
-        [out:json];
-        area[name="Manhattan"][admin_level=7]->.searchArea;
-        (
-          way(area.searchArea);
-          node(area.searchArea);
-        );
-        out body;
-        >;
-        out skel qt;
-    "#);
-
-    //Request the data from Overpass API
-    let response: String = osm_request_blocking(query)?;
+    //Get the  area around bermuda
+    let response = QueryEngine::new()
+        .query_poly_blocking(vec![
+            (32.407, -64.896),
+            (32.407, -64.630),
+            (32.224, -64.630),
+            (32.224, -64.896),
+            (32.407, -64.896),
+        ])
+        .expect("Could not query OSM!");
 
     //Get json structure from the response string and then save for the future
-    let json: OverpassResponse = serde_json::from_str(&response)?;
-    let _ = json.save_blocking(filepath)?;
+    let json: OverpassResponse = serde_json::from_str(&response)
+        .expect("Was not able to parse JSON!");
+    let _ = json.save_blocking(filepath)
+        .expect("Was not able to save file!");
  
     Ok(json)
 }
@@ -117,8 +114,8 @@ fn query_and_save(filepath: &str) -> Result<OverpassResponse, Box<dyn Error>> {
 fn main() {
 
     //Vars to change
-    let image_save_location = "./map.png";
-    let graph_save_location = "./assets/manhattan_test.json";
+    let image_save_location = "./bermuda_map.png";
+    let graph_save_location = "./assets/bermuda_test.json";
 
     //Get json structure from disk
     let json: OverpassResponse = OverpassResponse::load_blocking(graph_save_location)

@@ -6,7 +6,7 @@ use petgraph::{graph::UnGraph, adj::NodeIndex};
 
 use super::{
     way::{OSMWay, get_osm_ways},
-    node::{OSMNode, node_dist, get_nodes_from_ways},
+    node::{OSMNode, node_dist, get_osm_nodes},
     edge::OSMEdge
 };
 
@@ -18,7 +18,7 @@ pub fn create_graph(elements: &Vec<Value>) -> Result<OSMGraph, Box<dyn Error>> {
 
     //Parse out all of the nodes and ways
     let ways: Vec<OSMWay> = get_osm_ways(elements)?;
-    let nodes: Vec<OSMNode> = get_nodes_from_ways(elements, &ways)?;
+    let nodes: Vec<OSMNode> = get_osm_nodes(elements)?;
 
     let mut result = UnGraph::<OSMNode, OSMEdge>::with_capacity(nodes.len(), ways.len());
 
