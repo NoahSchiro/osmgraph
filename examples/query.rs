@@ -9,12 +9,15 @@ fn main() {
         .query_blocking(r#"
             [out:json];
             area[name="Manhattan"][admin_level=7]->.searchArea;
+
             (
-              way(area.searchArea);
-              node(area.searchArea);
+              way["highway"~"motorway|trunk|primary|secondary|tertiary|unclassified|service|residential"](area.searchArea);
             );
-            out body;
-            >;
+
+            //Get nodes associated with ways defined before
+            (._; >;);
+
+            out body; >;
             out skel qt;"#.to_string()
         ).expect("Could not query OSM!");
 
