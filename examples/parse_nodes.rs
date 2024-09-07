@@ -1,4 +1,4 @@
-use osmgraph::overpass_api::OverpassResponse;
+use osmgraph::api::OverpassResponse;
 use osmgraph::graph::{OSMNode, get_osm_nodes};
 
 use serde_json::Value;

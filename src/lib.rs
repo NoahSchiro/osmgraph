@@ -26,7 +26,7 @@
 //!
 //! ```rust
 //! use osmgraph::graph::{OSMGraph, create_graph};
-//! use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
+//! use osmgraph::api::{QueryEngine, OverpassResponse};
 //!
 //! use serde_json::Value;
 //!
@@ -56,6 +56,6 @@
 //!     .expect("Was not able to create graph from json!");
 //! ```
 
-pub mod overpass_api;
+pub mod api;
 
 pub mod graph;

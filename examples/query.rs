@@ -1,4 +1,4 @@
-use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
+use osmgraph::api::{QueryEngine, OverpassResponse};
 
 use serde_json::Value;
 

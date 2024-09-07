@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::error::Error;
 
-use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
+use osmgraph::api::{QueryEngine, OverpassResponse};
 use osmgraph::graph::{OSMGraph, OSMNode, OSMEdge, create_graph};
 
 use serde_json::Value;
