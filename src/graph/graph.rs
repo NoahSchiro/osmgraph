@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 use std::error::Error;
 
-use serde_json::Value;
 use petgraph::{graph::UnGraph, adj::NodeIndex};
+
+use crate::api::Element;
 
 use super::{
     way::{OSMWay, get_osm_ways},
@@ -14,7 +15,7 @@ use super::{
 pub type OSMGraph = UnGraph<OSMNode, OSMEdge>;
 
 /// Given a json type structure, this function tries to parse an `OSMGraph` out of that json.
-pub fn create_graph(elements: &Vec<Value>) -> Result<OSMGraph, Box<dyn Error>> {
+pub fn create_graph(elements: &Vec<Element>) -> Result<OSMGraph, Box<dyn Error>> {
 
     //Parse out all of the nodes and ways
     let ways: Vec<OSMWay> = get_osm_ways(elements)?;

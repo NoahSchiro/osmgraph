@@ -1,7 +1,5 @@
-use osmgraph::api::OverpassResponse;
+use osmgraph::api::{OverpassResponse, Element};
 use osmgraph::graph::{OSMNode, get_osm_nodes};
-
-use serde_json::Value;
 
 fn main() {
 
@@ -11,8 +9,7 @@ fn main() {
     println!("Parsed the json!");
 
     //Get the elements
-    let elements: &Vec<Value> = json.elements().as_array()
-        .expect("Was not able to fetch elements from json!");
+    let elements: &Vec<Element> = json.elements();
     println!("{} elements in request", elements.len());
 
     //Get the OSMNodes from the elements

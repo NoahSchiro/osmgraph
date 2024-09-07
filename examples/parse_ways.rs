@@ -1,7 +1,6 @@
-use osmgraph::api::OverpassResponse;
+use osmgraph::api::{OverpassResponse, Element};
 use osmgraph::graph::way::{OSMWay, get_osm_ways};
 
-use serde_json::Value;
 
 fn main() {
 
@@ -11,8 +10,7 @@ fn main() {
     println!("Parsed the json...");
 
     //Get the elements
-    let elements: &Vec<Value> = json.elements().as_array()
-        .expect("Was not able to parse elements from json!");
+    let elements: &Vec<Element> = json.elements();
     println!("{} elements in request", elements.len());
 
     //Get the OSMWay from the elements

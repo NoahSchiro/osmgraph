@@ -1,10 +1,9 @@
 #[cfg(test)]
 mod create_graph {
 
-    use osmgraph::api::OverpassResponse;
+    use osmgraph::api::{OverpassResponse, Element};
     use osmgraph::graph::create_graph;
 
-    use serde_json::Value;
 
     #[test]
     fn test_create_graph() {
@@ -13,7 +12,7 @@ mod create_graph {
             .expect("Was not able to load json!");
 
 
-        let elements: &Vec<Value> = json.elements().as_array().unwrap();
+        let elements: &Vec<Element> = json.elements();
 
         let graph = create_graph(elements)
             .expect("Was unable to parse graph!");
