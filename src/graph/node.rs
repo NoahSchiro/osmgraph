@@ -2,8 +2,6 @@ use core::fmt;
 use std::collections::HashSet;
 use std::error::Error;
 
-use serde_json::Value;
-
 use crate::graph::way::OSMWay;
 use crate::api::Element;
 
@@ -103,7 +101,7 @@ pub fn filter_unconnected_nodes(ways: &Vec<OSMWay>, nodes: Vec<OSMNode>) -> Vec<
 
 /// Given a json type structure and a `Vec<OSMWay>`, this function tries to
 /// parse all `OSMNodes` out of that json if and only if the node lies on one of the ways provided.
-pub fn get_nodes_from_ways(elements: &Vec<Value>, ways: &Vec<OSMWay>)
+pub fn get_nodes_from_ways(elements: &Vec<Element>, ways: &Vec<OSMWay>)
     -> Result<Vec<OSMNode>, Box<dyn Error>> { 
 
     //Create set of node ids
@@ -115,59 +113,22 @@ pub fn get_nodes_from_ways(elements: &Vec<Value>, ways: &Vec<OSMWay>)
     }
 
     //Only get OSM elements that are nodes
-    let node_elements: Vec<Value> = elements.clone().into_iter()
+    let node_elements: Vec<OSMNode> = elements.clone().into_iter()
+        .filter_map(|e| {
+            if let Element::Node { id, lat, lon } = e {
 
-        //Filter to only the node elements
-        .filter(|e| {
-            match e.get("type") {
-                Some(t) => t == "node",
-                None => false
-            }
-        })
-
-        //Filter to node elements referenced in way element
-        .filter(|e| {
-            match e.get("id") {
-                Some(id) => node_ids.contains(
-                    &id.as_u64().unwrap()
-                ),
-                None => false
+                if node_ids.contains(&id) {
+                    Some(OSMNode { id, lat, lon })
+                } else {
+                    None
+                }
+            } else {
+                None
             }
         })
         .collect();
 
-    //Result to collect into
-    let mut result: Vec<OSMNode> = vec![];
-
-    for elem in node_elements {
-
-        let id: u64 = if let Some(x) = elem.get("id").cloned() {
-            x.as_u64().unwrap()
-        } else {
-            continue; //Node is invalid if it has no ID
-        };
-
-        let lat: f64 = if let Some(x) = elem.get("lat").cloned() {
-            x.as_f64().unwrap()
-        } else {
-            continue; //Node is invalid if it has no lat 
-        };
-
-        let lon: f64 = if let Some(x) = elem.get("lon").cloned() {
-            x.as_f64().unwrap()
-        } else {
-            continue; //Node is invalid if it has no lon
-        };
-
-        result.push(
-            OSMNode {
-                id, lat, lon
-            }
-        );
-    }
-
-    //Return
-    Ok(result)
+    Ok(node_elements)
 }
 
 
