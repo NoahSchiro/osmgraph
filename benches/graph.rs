@@ -1,5 +1,5 @@
 use osmgraph::{
-    overpass_api::OverpassResponse,
+    api::OverpassResponse,
     graph::{
         way::{OSMWay, get_osm_ways},
         create_graph,
@@ -17,8 +17,7 @@ pub fn small_map_parsing(c: &mut Criterion) {
         .expect("Was not able to load json!");
 
     //Get the elements
-    let elements = json.elements().as_array()
-        .expect("Was not able to fetch elements from json!");
+    let elements = json.elements();
 
     c.bench_function("node_parse", |b| b.iter(|| {
         get_osm_nodes(elements).expect("Was not able to get nodes from json!")
@@ -49,8 +48,7 @@ pub fn large_map_parsing(c: &mut Criterion) {
         .expect("Was not able to load json!");
 
     //Get the elements
-    let elements = json.elements().as_array()
-        .expect("Was not able to fetch elements from json!");
+    let elements = json.elements();
 
     group.bench_function("node_parse", |b| b.iter(|| {
         get_osm_nodes(elements).expect("Was not able to get nodes from json!")
