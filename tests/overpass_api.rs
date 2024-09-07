@@ -136,8 +136,6 @@ mod save_load {
 
     use osmgraph::api::{QueryEngine, OverpassResponse};
 
-    use serde_json::Value;
-
     #[tokio::test]
     async fn save_load() {
 
@@ -154,27 +152,6 @@ mod save_load {
             >;
             out skel qt;
         "#.to_string()).await.expect("OSM request failed!");
-
-        let temp: Value = serde_json::from_str(&response)
-            .expect("Could not parse!");
-
-        let elements: Vec<Value> = temp.get("elements").unwrap().as_array().unwrap().to_vec();
-
-        for value in elements {
-
-            if value.get("type").unwrap() == "way" {
-                match value.get("tags") {
-                    Some(tags) => {
-                        match tags.get("highway") {
-                            Some(_) => {},
-                            None => println!("{}", value)
-                        }
-                    },
-                    None => {}
-                }
-            }
-            
-        }
 
         let json: OverpassResponse = serde_json::from_str(&response)
             .expect("Could not parse");
