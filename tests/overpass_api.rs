@@ -111,7 +111,7 @@ mod parse {
 
         let response: String = engine.query(r#"
             [out:json];
-            area[name="Selinsgrove"]->.searchArea;
+            area[name="Selinsgrove"][admin_level=8]->.searchArea;
             (
               way(area.searchArea);
               node(area.searchArea);
@@ -121,9 +121,10 @@ mod parse {
             out skel qt;
         "#.to_string()).await.expect("OSM request failed!");
 
-        let json: OverpassResponse = serde_json::from_str(&response).unwrap();
+        let json: OverpassResponse = serde_json::from_str(&response)
+            .expect("Could not parse!");
 
-        assert!(*json.elements()  != json!(null));
+        assert!(json.elements().len() > 0);
         assert!(*json.generator() != json!(null));
         assert!(*json.osm3s()     != json!(null));
         assert!(*json.version()   != json!(null));
@@ -134,6 +135,8 @@ mod parse {
 mod save_load {
 
     use osmgraph::api::{QueryEngine, OverpassResponse};
+
+    use serde_json::Value;
 
     #[tokio::test]
     async fn save_load() {
@@ -152,7 +155,29 @@ mod save_load {
             out skel qt;
         "#.to_string()).await.expect("OSM request failed!");
 
-        let json: OverpassResponse = serde_json::from_str(&response).unwrap();
+        let temp: Value = serde_json::from_str(&response)
+            .expect("Could not parse!");
+
+        let elements: Vec<Value> = temp.get("elements").unwrap().as_array().unwrap().to_vec();
+
+        for value in elements {
+
+            if value.get("type").unwrap() == "way" {
+                match value.get("tags") {
+                    Some(tags) => {
+                        match tags.get("highway") {
+                            Some(_) => {},
+                            None => println!("{}", value)
+                        }
+                    },
+                    None => {}
+                }
+            }
+            
+        }
+
+        let json: OverpassResponse = serde_json::from_str(&response)
+            .expect("Could not parse");
 
         json.save("./assets/test.json")
             .await
@@ -180,7 +205,8 @@ mod save_load {
             out skel qt;
         "#.to_string()).expect("OSM request failed!");
         
-        let json: OverpassResponse = serde_json::from_str(&response).unwrap();
+        let json: OverpassResponse = serde_json::from_str(&response)
+            .expect("Could not parse");
 
         json.save_blocking("./assets/test.json")
             .expect("Was not able to save json!");

@@ -1,9 +1,8 @@
 use std::error::Error;
 
-use osmgraph::api::{QueryEngine, OverpassResponse};
+use osmgraph::api::{QueryEngine, OverpassResponse, Element};
 use osmgraph::graph::{OSMGraph, OSMNode, OSMEdge, create_graph};
 
-use serde_json::Value;
 use petgraph::stable_graph::DefaultIx;
 use petgraph::graph::Edge;
 
@@ -117,8 +116,7 @@ fn main() {
     println!("Parsed the json!");
 
     //Get the elements
-    let elements: &Vec<Value> = json.elements().as_array()
-        .expect("Was not able to make request!");
+    let elements: &Vec<Element> = json.elements();
     println!("{} elements in request", elements.len());
 
     //Get the graph from the elements

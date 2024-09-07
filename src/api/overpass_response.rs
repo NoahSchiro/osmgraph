@@ -9,6 +9,21 @@ use tokio::{
     runtime::Runtime
 };
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[serde(rename_all = "lowercase")] 
+#[serde(tag = "type")]
+pub enum Element {
+    Node {
+        id: u64,
+        lat: f64,
+        lon: f64,
+    }, 
+    Way {
+        id: u64,
+        nodes: Vec<u64>,
+        tags: Option<Value>,
+    }
+}
 
 /// `OverpassResponse` is the basic structure that we expect the OSM to respond with.
 /// Serde JSON helps us parse this string into the correct data structure.
@@ -35,11 +50,11 @@ use tokio::{
 /// let json: OverpassResponse = serde_json::from_str(&response)
 ///     .expect("Was not able to parse json!");
 /// ```
-#[derive(Serialize, Deserialize, Clone, PartialEq, Hash, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Default)]
 pub struct OverpassResponse {
 
     //Graph data
-    elements: Value,
+    elements: Vec<Element>,
 
     //Metadata
     generator: Value,
@@ -51,7 +66,7 @@ impl OverpassResponse {
 
     /// Return the `elements` field from the response. This field is the most important as it
     /// contains the actual graph information.
-    pub fn elements(&self) -> &Value {
+    pub fn elements(&self) -> &Vec<Element> {
         &self.elements
     }
     /// Return the `generator` field from the response.

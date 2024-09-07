@@ -5,6 +5,7 @@ use std::error::Error;
 use serde_json::Value;
 
 use crate::graph::way::OSMWay;
+use crate::api::Element;
 
 /// OSMNode contains all information that we might care about in a node. Currently, it contains a
 /// node ID (as defined in Overpass API) a latitude and a longitude.
@@ -65,49 +66,20 @@ pub(super) fn node_dist(n1: &OSMNode, n2: &OSMNode) -> f64 {
 }
 
 /// Given a json type structure, this function tries to parse all `OSMNodes` out of that json.
-pub fn get_osm_nodes(elements: &Vec<Value>) -> Result<Vec<OSMNode>, Box<dyn Error>> {
+pub fn get_osm_nodes(elements: &Vec<Element>) -> Result<Vec<OSMNode>, Box<dyn Error>> {
 
     //Only get OSM elements that are nodes
-    let node_elements: Vec<Value> = elements.clone().into_iter()
-        .filter(|e| {
-            match e.get("type") {
-                Some(t) => t == "node",
-                None => false
+    let node_elements: Vec<OSMNode> = elements.clone().into_iter()
+        .filter_map(|e| {
+            if let Element::Node { id, lat, lon } = e {
+                Some(OSMNode { id, lat, lon })
+            } else {
+                None
             }
         })
         .collect();
 
-    //Result to collect into
-    let mut result: Vec<OSMNode> = Vec::with_capacity(node_elements.len());
-
-    for elem in node_elements {
-
-        let id: u64 = if let Some(x) = elem.get("id").cloned() {
-            x.as_u64().unwrap()
-        } else {
-            continue; //Node is invalid if it has no ID
-        };
-
-        let lat: f64 = if let Some(x) = elem.get("lat").cloned() {
-            x.as_f64().unwrap()
-        } else {
-            continue; //Node is invalid if it has no lat 
-        };
-
-        let lon: f64 = if let Some(x) = elem.get("lon").cloned() {
-            x.as_f64().unwrap()
-        } else {
-            continue; //Node is invalid if it has no lon
-        };
-
-        result.push(
-            OSMNode {
-                id, lat, lon
-            }
-        );
-    }
-
-    Ok(result)
+    Ok(node_elements)
 }
 
 /// Given a set of nodes and ways, this function tries to parse all `OSMNodes` that lie
