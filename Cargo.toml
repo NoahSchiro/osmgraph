@@ -1,7 +1,7 @@
 [package]
 name = "osmgraph"
 authors = ["NoahSchiro"]
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 
 readme = "README.md"
@@ -23,14 +23,14 @@ name = "graph"
 harness = false
 
 [dev-dependencies]
-tokio = { version = "1.39.2", features = ["macros"] } # Used for testing async functions
+tokio = { version = "1.40", features = ["macros"] } # Used for testing async functions
 plotters = "0.3.6" # This is used in parse_graph and astar examples
 rand = "0.8.5" # This is used in astar example
 criterion = "0.5.1" # For benchmarking
 
 [dependencies]
 petgraph = "0.6.5"
-reqwest = { version = "0.12.5", features = ["json", "blocking"] }
-tokio = { version = "1.39.2", features = ["rt-multi-thread", "fs"] }
-serde = { version = "1.0.204", features = ["derive"] }
-serde_json = "1.0.121"
+reqwest = { version = "0.12.7", features = ["json", "blocking"] }
+tokio = { version = "1.40", features = ["rt-multi-thread", "fs"] }
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.128"

@@ -1,13 +1,6 @@
 use std::io::{Error, ErrorKind};
 
-use serde::{Serialize, Deserialize};
-use serde_json::Value;
-
-use tokio::{
-    fs::File,
-    io::{AsyncWriteExt, AsyncReadExt},
-    runtime::Runtime
-};
+use tokio::runtime::Runtime;
 
 /// QueryEngine is a structure that helps create queries to the Overpass API.
 /// It allows us to make lower level API calls (with the Overpass QL) as well as some higher level
@@ -59,7 +52,7 @@ impl QueryEngine {
     /// Set a new url to query. Meant to be used in a functional style
     ///
     /// ```rust
-    /// use osmgraph::overpass_api::QueryEngine;
+    /// use osmgraph::api::QueryEngine;
     ///
     /// let engine = QueryEngine::new()
     ///     .with_url("www.url_example.com".to_string());
@@ -79,7 +72,7 @@ impl QueryEngine {
     /// Set new way filters in queries. Meant to be used in a functional style
     ///
     /// ```rust
-    /// use osmgraph::overpass_api::QueryEngine;
+    /// use osmgraph::api::QueryEngine;
     ///
     /// let engine = QueryEngine::new()
     ///     .with_filters(vec![String::from("motorway")]);
@@ -108,7 +101,7 @@ impl QueryEngine {
     /// Example: 
     ///
     /// ```rust
-    /// use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
+    /// use osmgraph::api::{QueryEngine, OverpassResponse};
     ///
     /// let response: String = QueryEngine::new()
     ///     .query_place_blocking("Selinsgrove".to_string(), Some(7))
@@ -161,7 +154,7 @@ impl QueryEngine {
     /// Example: 
     ///
     /// ```rust
-    /// use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
+    /// use osmgraph::api::{QueryEngine, OverpassResponse};
     /// 
     /// //A big box
     /// let poly = vec![
@@ -246,105 +239,5 @@ impl QueryEngine {
     pub fn query_blocking(&self, query: String) -> Result<String, Error> {
         Runtime::new()?
             .block_on(self.query(query))
-    }
-}
-
-/// `OverpassResponse` is the basic structure that we expect the OSM to respond with.
-/// Serde JSON helps us parse this string into the correct data structure.
-///
-/// Example:
-/// ```rust
-/// use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
-///
-/// let engine = QueryEngine::new();
-///
-/// //Make the request
-/// let response: String = engine.query_blocking(r#"
-///     [out:json];
-///     area[name="Selinsgrove"]->.searchArea;
-///     (
-///       way(area.searchArea);
-///       node(area.searchArea);
-///     );
-///     out body;
-///     >;
-///     out skel qt;
-/// "#.to_string()).expect("Was not able to request OSM!");
-///
-/// let json: OverpassResponse = serde_json::from_str(&response)
-///     .expect("Was not able to parse json!");
-/// ```
-#[derive(Serialize, Deserialize, Clone, PartialEq, Hash, Debug, Default)]
-pub struct OverpassResponse {
-
-    //Graph data
-    elements: Value,
-
-    //Metadata
-    generator: Value,
-    osm3s: Value,
-    version: Value
-}
-
-impl OverpassResponse {
-
-    /// Return the `elements` field from the response. This field is the most important as it
-    /// contains the actual graph information.
-    pub fn elements(&self) -> &Value {
-        &self.elements
-    }
-    /// Return the `generator` field from the response.
-    pub fn generator(&self) -> &Value {
-        &self.generator
-    }
-    /// Return the `osm3s` field from the response.
-    pub fn osm3s(&self) -> &Value {
-        &self.osm3s
-    }
-    /// Return the `version` field from the response.
-    pub fn version(&self) -> &Value {
-        &self.version
-    }
-
-    /// Given a specified `filepath`, save the OverpassResponse to that location.
-    pub async fn save(&self, filepath: &str) -> Result<(), Error> {
-
-        let list_as_json = serde_json::to_string(self)?;
-        let mut file = File::create(filepath).await?;
-
-        file.write_all(list_as_json.as_bytes()).await?;
-        file.flush().await?;
-
-        Ok(())
-    }
-
-    /// Behaves the same as [`OverpassResponse::save`], but will wait for the function to finish before continuing.
-    pub fn save_blocking(&self, filepath: &str) -> Result<(), Error> {
-        Runtime::new()?
-            .block_on(self.save(filepath))
-    }
-
-    /// Given a specified `filepath`, load the OverpassResponse from that location. The file is
-    /// assumed to be a JSON and follow the structure of OverpassResponse.
-    pub async fn load(filepath: &str) -> Result<Self, Error> {
-
-        let mut file = File::open(filepath).await?;
-
-        let mut contents = Vec::new();
-
-        // Read the file's contents into the buffer
-        file.read_to_end(&mut contents).await?;
-
-        let contents_as_string: String = String::from_utf8_lossy(&contents).to_string();
-
-        let json: OverpassResponse = serde_json::from_str(&contents_as_string)?;
-
-        Ok(json)
-    }
-
-    /// Behaves the same as [`OverpassResponse::load`], but will wait for the function to finish before continuing.
-    pub fn load_blocking(filepath: &str) -> Result<Self, Error> {
-        Runtime::new()?
-            .block_on(Self::load(filepath))
     }
 }

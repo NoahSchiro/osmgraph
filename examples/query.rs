@@ -1,14 +1,12 @@
-use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
-
-use serde_json::Value;
+use osmgraph::api::{QueryEngine, OverpassResponse, Element};
 
 fn main() {
 
     //Create a query string in the format of the Overpass Query Language
-    let response = QueryEngine::new()
+    let response: String = QueryEngine::new()
         .query_blocking(r#"
             [out:json];
-            area[name="Manhattan"][admin_level=7]->.searchArea;
+            area[name="Selinsgrove"][admin_level=8]->.searchArea;
 
             (
               way["highway"~"motorway|trunk|primary|secondary|tertiary|unclassified|service|residential"](area.searchArea);
@@ -26,12 +24,11 @@ fn main() {
     //Get json structure from the response string
     let json: OverpassResponse = serde_json::from_str(&response)
         .expect("Was not able to parse json!");
-    
+
     println!("Parsed the json!");
 
     //Get the elements
-    let elements: &Vec<Value> = json.elements().as_array()
-        .expect("Was not able to fetch elements from json!");
+    let elements: &Vec<Element> = json.elements();
 
     println!("{} elements in request", elements.len());
 }

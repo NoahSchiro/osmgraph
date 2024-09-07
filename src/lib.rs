@@ -26,16 +26,14 @@
 //!
 //! ```rust
 //! use osmgraph::graph::{OSMGraph, create_graph};
-//! use osmgraph::overpass_api::{QueryEngine, OverpassResponse};
-//!
-//! use serde_json::Value;
+//! use osmgraph::api::{QueryEngine, OverpassResponse, Element};
 //!
 //! // Query to fetch all data related to "Selinsgrove" town in Pennsylvania
 //! let engine = QueryEngine::new();
 //!
 //! let response: String = engine.query_blocking(r#"
 //!     [out:json];
-//!     area[name="Selinsgrove"]->.searchArea;
+//!     area[name="Selinsgrove"][admin_level=8]->.searchArea;
 //!     (
 //!       way(area.searchArea);
 //!       node(area.searchArea);
@@ -48,14 +46,13 @@
 //! // Parse json
 //! let json: OverpassResponse = serde_json::from_str(&response)
 //!     .expect("Was not able to parse data from json!");
-//! let elements: &Vec<Value> = json.elements().as_array()
-//!     .expect("Was not able to retrieve elements from json!");
+//! let elements: &Vec<Element> = json.elements();
 //!
 //! //Create graph
 //! let g: OSMGraph = create_graph(elements)
 //!     .expect("Was not able to create graph from json!");
 //! ```
 
-pub mod overpass_api;
+pub mod api;
 
 pub mod graph;
