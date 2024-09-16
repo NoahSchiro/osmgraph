@@ -6,7 +6,7 @@ use serde_json::Value;
 use tokio::{
     fs::File,
     io::{AsyncWriteExt, AsyncReadExt},
-    runtime::Runtime
+    runtime::Builder,
 };
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
@@ -96,7 +96,9 @@ impl OverpassResponse {
 
     /// Behaves the same as [`OverpassResponse::save`], but will wait for the function to finish before continuing.
     pub fn save_blocking(&self, filepath: &str) -> Result<(), Error> {
-        Runtime::new()?
+        Builder::new_current_thread()
+            .enable_all()
+            .build()?
             .block_on(self.save(filepath))
     }
 
@@ -120,7 +122,9 @@ impl OverpassResponse {
 
     /// Behaves the same as [`OverpassResponse::load`], but will wait for the function to finish before continuing.
     pub fn load_blocking(filepath: &str) -> Result<Self, Error> {
-        Runtime::new()?
+        Builder::new_current_thread()
+            .enable_all()
+            .build()?
             .block_on(Self::load(filepath))
     }
 }
