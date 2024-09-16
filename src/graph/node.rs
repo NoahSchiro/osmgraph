@@ -67,10 +67,10 @@ pub(super) fn node_dist(n1: &OSMNode, n2: &OSMNode) -> f64 {
 pub fn get_osm_nodes(elements: &Vec<Element>) -> Result<Vec<OSMNode>, Box<dyn Error>> {
 
     //Only get OSM elements that are nodes
-    let node_elements: Vec<OSMNode> = elements.clone().into_iter()
+    let node_elements: Vec<OSMNode> = elements.into_iter()
         .filter_map(|e| {
             if let Element::Node { id, lat, lon } = e {
-                Some(OSMNode { id, lat, lon })
+                Some(OSMNode { id: *id, lat: *lat, lon: *lon })
             } else {
                 None
             }
