@@ -68,17 +68,17 @@ impl OSMWay {
 pub fn get_osm_ways(elements: &Vec<Element>) -> Result<Vec<OSMWay>, Box<dyn Error>> {
 
     //Only get OSM elements that are ways and the ways must have tags
-    let way_elements: Vec<OSMWay> = elements.clone().into_iter()
+    let way_elements: Vec<OSMWay> = elements.into_iter()
         .filter_map(|elem| {
             if let Element::Way { id, nodes, tags } = elem {
 
-                if tags == None {
+                if *tags == None {
                     return None
                 }
                 if let Some(highway_type) = tags.clone()?.get("highway") {
                     Some(OSMWay {
-                        id,
-                        nodes,
+                        id: *id,
+                        nodes: nodes.to_vec(),
                         // We can only compute distance if we have access to the nodes as well
                         // Leave this blank at the moment
                         dists: vec![], 
