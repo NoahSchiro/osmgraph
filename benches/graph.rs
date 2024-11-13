@@ -1,5 +1,5 @@
 use osmgraph::{
-    api::OverpassResponse,
+    api::{QueryEngine, OverpassResponse},
     graph::{
         way::{OSMWay, get_osm_ways},
         create_graph,
@@ -43,9 +43,32 @@ pub fn large_map_parsing(c: &mut Criterion) {
     let mut group = c.benchmark_group("large_map_parsing");
     group.sample_size(10);
 
+    let large_graph_file_path = "./assets/manhattan_test.json";
+
     //Get json structure from disk
-    let json: OverpassResponse = OverpassResponse::load_blocking("./assets/manhattan_test.json")
-        .expect("Was not able to load json!");
+    let json: OverpassResponse = OverpassResponse::load_blocking(large_graph_file_path)
+        .unwrap_or_else(|_| {
+            let response = QueryEngine::new()
+            .query_blocking(r#"
+                [out:json];
+                area[name="Manhattan"][admin_level=7]->.searchArea;
+                (
+                  way(area.searchArea);
+                  node(area.searchArea);
+                );
+                out body;
+                >;
+                out skel qt;"#.to_string()
+            ).expect("Could not query OSM!");
+
+            //Get json structure from the response string and then save for the future
+            let json: OverpassResponse = serde_json::from_str(&response)
+                .expect("Was not able to parse json from response!");
+            let _ = json.save_blocking(large_graph_file_path)
+                .expect("Was not able to save json to file!");
+
+            json
+        });
 
     //Get the elements
     let elements = json.elements();
