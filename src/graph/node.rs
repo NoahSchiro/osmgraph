@@ -1,17 +1,20 @@
 use core::fmt;
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
 use std::error::Error;
 
 use crate::graph::way::OSMWay;
 use crate::api::Element;
 
+type OSMTag = Option<HashMap<String, String>>;
+
 /// OSMNode contains all information that we might care about in a node. Currently, it contains a
 /// node ID (as defined in Overpass API) a latitude and a longitude.
-#[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Default)]
+#[derive(Clone, PartialEq, Debug, Default)]
 pub struct OSMNode {
     id: u64,
     lat: f64,
-    lon: f64
+    lon: f64,
+    tags: OSMTag
 }
 
 impl fmt::Display for OSMNode {
@@ -24,8 +27,8 @@ impl fmt::Display for OSMNode {
 impl OSMNode {
 
     /// Create a new OSMNode from fields.
-    pub fn new(id: u64, lat: f64, lon: f64) -> Self {
-        OSMNode { id, lat, lon }
+    pub fn new(id: u64, lat: f64, lon: f64, tags: OSMTag) -> Self {
+        OSMNode { id, lat, lon, tags}
     }
 
     /// Get the node ID.
@@ -39,6 +42,11 @@ impl OSMNode {
     /// Get the node longitude. 
     pub fn lon(&self) -> f64 {
         self.lon
+    }
+
+    /// Get a reference tags associated with this node
+    pub fn tags(&self) -> &OSMTag {
+        &self.tags
     }
 }
 
@@ -69,8 +77,8 @@ pub fn get_osm_nodes(elements: &Vec<Element>) -> Result<Vec<OSMNode>, Box<dyn Er
     //Only get OSM elements that are nodes
     let node_elements: Vec<OSMNode> = elements.into_iter()
         .filter_map(|e| {
-            if let Element::Node { id, lat, lon } = e {
-                Some(OSMNode { id: *id, lat: *lat, lon: *lon })
+            if let Element::Node { id, lat, lon, tags } = e {
+                Some(OSMNode { id: *id, lat: *lat, lon: *lon, tags: tags.clone() })
             } else {
                 None
             }
@@ -115,10 +123,10 @@ pub fn get_nodes_from_ways(elements: &Vec<Element>, ways: &Vec<OSMWay>)
     //Only get OSM elements that are nodes
     let node_elements: Vec<OSMNode> = elements.clone().into_iter()
         .filter_map(|e| {
-            if let Element::Node { id, lat, lon } = e {
+            if let Element::Node { id, lat, lon, tags } = e {
 
                 if node_ids.contains(&id) {
-                    Some(OSMNode { id, lat, lon })
+                    Some(OSMNode { id, lat, lon, tags})
                 } else {
                     None
                 }

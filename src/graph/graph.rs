@@ -29,7 +29,7 @@ pub fn create_graph(elements: &Vec<Element>) -> Result<OSMGraph, Box<dyn Error>>
 
     //Add nodes to mapping and to graph
     for node in nodes {
-        let petgraph_index = result.add_node(node).index() as u32;
+        let petgraph_index = result.add_node(node.clone()).index() as u32;
         node_mapping.insert(
             node.id(),
             petgraph_index

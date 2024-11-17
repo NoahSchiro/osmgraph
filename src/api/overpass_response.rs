@@ -1,4 +1,5 @@
 use std::io::Error;
+use std::collections::HashMap;
 
 use serde::{Serialize, Deserialize};
 use serde_json::Value;
@@ -17,6 +18,7 @@ pub enum Element {
         id: u64,
         lat: f64,
         lon: f64,
+        tags: Option<HashMap<String, String>>
     }, 
     Way {
         id: u64,
