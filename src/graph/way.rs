@@ -1,6 +1,8 @@
 use std::fmt;
 use std::error::Error;
 
+use rayon::prelude::*;
+
 use crate::api::Element;
 
 /// OSMWay contains all information that we might care about in a way. Currently, it contains a
@@ -68,7 +70,7 @@ impl OSMWay {
 pub fn get_osm_ways(elements: &Vec<Element>) -> Result<Vec<OSMWay>, Box<dyn Error>> {
 
     //Only get OSM elements that are ways and the ways must have tags
-    let way_elements: Vec<OSMWay> = elements.into_iter()
+    let way_elements: Vec<OSMWay> = elements.into_par_iter()
         .filter_map(|elem| {
             if let Element::Way { id, nodes, tags } = elem {
 
