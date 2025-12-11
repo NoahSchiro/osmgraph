@@ -34,7 +34,7 @@ as A*) for free.
 
 ```rust
 use osmgraph::graph::{OSMGraph, create_graph};
-use osmgraph::overpass_api::{OverpassResponse, QueryEngine};
+use osmgraph::api::{OverpassResponse, QueryEngine};
 
 use serde_json::Value;
 
