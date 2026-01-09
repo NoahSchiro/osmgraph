@@ -42,7 +42,7 @@ let engine = QueryEngine::new();
 
 // Query to fetch all data related to "Selinsgrove" town in Pennsylvania
 let query = String::from(r#"
-    [out:json];
+    [out:json][timeout:25];
     area[name="Selinsgrove"]->.searchArea;
     (
       way(area.searchArea);

@@ -114,7 +114,7 @@ fn query_and_save(filepath: &str) -> Result<OverpassResponse, Box<dyn Error>> {
     //This is the more manual way (but with greater levels of control!
     let response = QueryEngine::new()
         .query_blocking(r#"
-            [out:json];
+            [out:json][timeout:25];
             area[name="Manhattan"][admin_level=7]->.searchArea;
             (
               way(area.searchArea);

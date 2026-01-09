@@ -50,7 +50,7 @@ pub fn large_map_parsing(c: &mut Criterion) {
         .unwrap_or_else(|_| {
             let response = QueryEngine::new()
             .query_blocking(r#"
-                [out:json];
+                [out:json][timeout:25];
                 area[name="Manhattan"][admin_level=7]->.searchArea;
                 (
                   way(area.searchArea);
