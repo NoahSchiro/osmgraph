@@ -30,28 +30,6 @@ pub enum Element {
 /// `OverpassResponse` is the basic structure that we expect the OSM to respond with.
 /// Serde JSON helps us parse this string into the correct data structure.
 ///
-/// Example:
-/// ```rust
-/// use osmgraph::api::{QueryEngine, OverpassResponse};
-///
-/// let engine = QueryEngine::new();
-///
-/// //Make the request
-/// let response: String = engine.query_blocking(r#"
-///     [out:json];
-///     area[name="Selinsgrove"]->.searchArea;
-///     (
-///       way(area.searchArea);
-///       node(area.searchArea);
-///     );
-///     out body;
-///     >;
-///     out skel qt;
-/// "#.to_string()).expect("Was not able to request OSM!");
-///
-/// let json: OverpassResponse = serde_json::from_str(&response)
-///     .expect("Was not able to parse json!");
-/// ```
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Default)]
 pub struct OverpassResponse {
 

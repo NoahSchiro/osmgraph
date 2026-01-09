@@ -31,8 +31,8 @@
 //! // Query to fetch all data related to "Selinsgrove" town in Pennsylvania
 //! let engine = QueryEngine::new();
 //!
-//! let response: String = engine.query_blocking(r#"
-//!     [out:json];
+//! let response: String = match engine.query_blocking(r#"
+//!     [out:json][timeout:25];
 //!     area[name="Selinsgrove"][admin_level=8]->.searchArea;
 //!     (
 //!       way(area.searchArea);
@@ -41,7 +41,10 @@
 //!     out body;
 //!     >;
 //!     out skel qt;"#.to_string()
-//! ).expect("Could not make a request to OSM!");
+//! ) {
+//!     Ok(response) => response,
+//!     Err(_) => return,
+//! };
 //!
 //! // Parse json
 //! let json: OverpassResponse = serde_json::from_str(&response)

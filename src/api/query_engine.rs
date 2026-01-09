@@ -98,15 +98,6 @@ impl QueryEngine {
     /// If you don't want to worry about admin levels, it is not required but will generally
     /// improve the results of your query.
     ///
-    /// Example: 
-    ///
-    /// ```rust
-    /// use osmgraph::api::{QueryEngine, OverpassResponse};
-    ///
-    /// let response: String = QueryEngine::new()
-    ///     .query_place_blocking("Selinsgrove".to_string(), Some(7))
-    ///     .expect("Could not query the server!");
-    /// ```
     pub async fn query_place(&self, area_name: String, admin_level: Option<usize>) -> Result<String, Error> {
 
         let this_admin_level: String = match admin_level {
@@ -124,7 +115,7 @@ impl QueryEngine {
 
         //Return a query with the specified city name
         self.query(format!(r#"
-            [out:json];
+            [out:json][timeout:25];
             area[name="{area_name}"]{this_admin_level}->.searchArea;
 
             //Find all ways according to filter
@@ -151,29 +142,6 @@ impl QueryEngine {
     ///
     /// **Note**: the first and last element of the vector must be the same!
     ///
-    /// Example: 
-    ///
-    /// ```rust
-    /// use osmgraph::api::{QueryEngine, OverpassResponse};
-    /// 
-    /// //A big box
-    /// let poly = vec![
-    ///     (40.0, -76.0),
-    ///     (41.0, -76.0),
-    ///     (41.0, -75.0),
-    ///     (40.0, -75.0),
-    ///     (40.0, -76.0),
-    /// ];
-    ///
-    /// let response: String = QueryEngine::new()
-    ///     .query_poly_blocking(vec![
-    ///         (32.407, -64.896),
-    ///         (32.407, -64.630),
-    ///         (32.224, -64.630),
-    ///         (32.224, -64.896),
-    ///         (32.407, -64.896),
-    ///     ])
-    ///     .expect("Could not query the server!");
     /// ```
     pub async fn query_poly(&self, polygon: Vec<(f64, f64)>) -> Result<String, Error> {
 
@@ -195,7 +163,7 @@ impl QueryEngine {
 
         //Return a query with the specified city name
         self.query(format!(r#"
-            [out:json];
+            [out:json][timeout:25];
 
             //Get the ways from the polygon
             way{way_filter}(poly:"{polyline_string}");
@@ -226,13 +194,25 @@ impl QueryEngine {
             .send()
             .await
             .map_err(|e| Error::new(ErrorKind::Other, e))?;
+        
+        let status = response.status();
+        let content_type = response
+            .headers()
+            .get(reqwest::header::CONTENT_TYPE)
+            .and_then(|v| v.to_str().ok())
+            .map(|s| s.to_owned())
+            .unwrap_or(String::from(""));
 
-        // Parse the response as JSON
-        let json_string: String = response.text()
+        let body = response.text()
             .await
             .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
-        Ok(json_string)
+        // Overpass sometimes returns 200 + HTML on failure
+        if !status.is_success() || content_type.contains("text/html") || body.trim_start().starts_with('<') {
+            return Err(Error::new(ErrorKind::Other, body));
+        }
+
+        Ok(body)
     }
 
     /// Behaves the same as [`Self::query`], but will wait for the function to finish before continuing.

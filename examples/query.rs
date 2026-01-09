@@ -5,7 +5,7 @@ fn main() {
     //Create a query string in the format of the Overpass Query Language
     let response: String = QueryEngine::new()
         .query_blocking(r#"
-            [out:json];
+            [out:json][timeout:25];
             area[name="Selinsgrove"][admin_level=8]->.searchArea;
 
             (
